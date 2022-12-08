@@ -64,6 +64,7 @@ namespace WhoIsTalking
         private GameObject LSpeaker;
         private GameObject NameTag;
         private int speed;
+        private bool setcolor = false;
         void Start()
         {
             LoadSpeaker = Instantiate(GameObject.Find("speaker(Clone)"));
@@ -89,12 +90,16 @@ namespace WhoIsTalking
             {
                 this.LSpeaker.SetActive(false);
             }
+            if (this.setcolor == true)
+            {
+                this.LSpeaker.GetComponent<Renderer>().material.color = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
+            }
         }
         IEnumerator ExecuteAfterTime(float time)
         {
             yield return new WaitForSeconds(time);
-
-            this.LSpeaker.GetComponent<Renderer>().material.color = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
+            this.setcolor = true;
+            
         }
 
     }
