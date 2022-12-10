@@ -12,6 +12,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using Utilla;
 using System.Collections;
+using HarmonyLib;
+using POpusCodec.Enums;
 
 namespace WhoIsTalking
 {
@@ -38,7 +40,7 @@ namespace WhoIsTalking
             GameObject bweep = bundle.LoadAsset<GameObject>("speaker");
             speaker = Instantiate(bweep);
             GorillaParent.instance.vrrigParent.AddComponent<SpeakerManager>();
-            
+            HarmonyPatches.ApplyHarmonyPatches();
         }
         void Update()
         {
@@ -102,7 +104,7 @@ namespace WhoIsTalking
             
         }
 
-    }
+     }
     class Looking : MonoBehaviour
     {
         
@@ -114,6 +116,21 @@ namespace WhoIsTalking
         void Update()
         {
             transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
+        }
+    }
+
+}
+namespace WhoIsTalking.Patches
+{
+    [HarmonyPatch(typeof(Player))]
+    [HarmonyPatch("Awake", 0)]
+    internal class MicPatch
+    {
+        private static void Postfix(Player __instance)
+        {
+            PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 510000;
+
+            PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;
         }
     }
 }
