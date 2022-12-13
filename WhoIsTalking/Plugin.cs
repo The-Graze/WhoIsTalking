@@ -14,6 +14,7 @@ using Utilla;
 using System.Collections;
 using HarmonyLib;
 using POpusCodec.Enums;
+using System.Linq;
 
 namespace WhoIsTalking
 {
@@ -67,6 +68,7 @@ namespace WhoIsTalking
         private GameObject NameTag;
         private int speed;
         private bool setcolor = false;
+        Looking looking;
         void Start()
         {
             LoadSpeaker = Instantiate(GameObject.Find("speaker(Clone)"));
@@ -108,10 +110,10 @@ namespace WhoIsTalking
     class Looking : MonoBehaviour
     {
         
-        private Transform Lookat;
+        public Transform Lookat;
         void Start()
         {
-            Lookat = GorillaParent.instance.vrrigs[0].transform;
+                Lookat = GameObject.Find("CM vcam1").transform.parent;
         }
         void Update()
         {
@@ -128,8 +130,7 @@ namespace WhoIsTalking.Patches
     {
         private static void Postfix(Player __instance)
         {
-            PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 510000;
-
+            PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 44100;
             PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;
         }
     }
