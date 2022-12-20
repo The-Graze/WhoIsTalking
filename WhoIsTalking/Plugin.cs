@@ -32,7 +32,7 @@ namespace WhoIsTalking
         void Start()
         {
             Utilla.Events.GameInitialized += OnGameInitialized;
-
+          
         }
         void OnGameInitialized(object sender, EventArgs e)
         {
@@ -85,6 +85,10 @@ namespace WhoIsTalking
             this.NameTag.GetComponent<Renderer>().material.shader = this.LSpeaker.GetComponent<Renderer>().material.shader;
             this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
             this.NameTag.GetComponent<TextMesh>().color = this.LSpeaker.GetComponent<Renderer>().material.color;
+
+            
+
+
             if (gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true)
             {
                 this.LSpeaker.SetActive(true);
@@ -113,18 +117,18 @@ namespace WhoIsTalking
         public Transform Lookat;
         void Start()
         {
-                Lookat = GameObject.Find("CM vcam1").transform.parent;
+            Lookat = GameObject.Find("Shoulder Camera").transform;
         }
         void Update()
         {
             transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
         }
     }
-
+    
 }
 namespace WhoIsTalking.Patches
 {
-    [HarmonyPatch(typeof(Player))]
+    [HarmonyPatch(typeof(PhotonVoiceNetwork))]
     [HarmonyPatch("Awake", 0)]
     internal class MicPatch
     {
@@ -133,5 +137,6 @@ namespace WhoIsTalking.Patches
             PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 44100;
             PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;
         }
+
     }
 }
