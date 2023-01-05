@@ -29,6 +29,7 @@ namespace WhoIsTalking
     public class Plugin : BaseUnityPlugin
     {
         public GameObject speaker;
+        Talkies Talkie;
         void Start()
         {
             Utilla.Events.GameInitialized += OnGameInitialized;
@@ -42,6 +43,8 @@ namespace WhoIsTalking
             speaker = Instantiate(bweep);
             GorillaParent.instance.vrrigParent.AddComponent<SpeakerManager>();
             HarmonyPatches.ApplyHarmonyPatches();
+            Talkie.Mat = speaker.transform.GetChild(2).gameObject.GetComponent<Renderer>().material;
+            speaker.transform.GetChild(2).gameObject.SetActive(false);
         }
         void Update()
         {
@@ -61,18 +64,19 @@ namespace WhoIsTalking
             }
         }
     }
-     class Talkies : MonoBehaviour
+      class Talkies : MonoBehaviour
      {
         private GameObject LoadSpeaker;
         private GameObject LSpeaker;
         private GameObject NameTag;
         private int speed;
-        private bool setcolor = false;
+        public Material Mat;
         Looking looking;
         void Start()
         {
             LoadSpeaker = Instantiate(GameObject.Find("speaker(Clone)"));
-            LoadSpeaker.transform.SetParent(gameObject.transform, false);
+            LoadSpeaker.transform.SetParent(gameObject.transform, true);
+            LoadSpeaker.transform.localPosition = new Vector3(0f,-1.727f,0f);
             LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
             speed = 300;
             NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
@@ -84,11 +88,6 @@ namespace WhoIsTalking
             this.LSpeaker.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
             this.NameTag.GetComponent<Renderer>().material.shader = this.LSpeaker.GetComponent<Renderer>().material.shader;
             this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
-            this.NameTag.GetComponent<TextMesh>().color = this.LSpeaker.GetComponent<Renderer>().material.color;
-
-            
-
-
             if (gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true)
             {
                 this.LSpeaker.SetActive(true);
@@ -98,15 +97,12 @@ namespace WhoIsTalking
             {
                 this.LSpeaker.SetActive(false);
             }
-            if (this.setcolor == true)
-            {
-                this.LSpeaker.GetComponent<Renderer>().material.color = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
-            }
         }
         IEnumerator ExecuteAfterTime(float time)
         {
             yield return new WaitForSeconds(time);
-            this.setcolor = true;
+            this.Mat.color = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
+            this.LSpeaker.GetComponent<Renderer>().material = Mat; 
             
         }
 
