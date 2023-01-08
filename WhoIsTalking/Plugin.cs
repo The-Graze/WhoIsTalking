@@ -29,7 +29,6 @@ namespace WhoIsTalking
     public class Plugin : BaseUnityPlugin
     {
         public GameObject speaker;
-        Talkies Talkie;
         void Start()
         {
             Utilla.Events.GameInitialized += OnGameInitialized;
@@ -41,10 +40,10 @@ namespace WhoIsTalking
             AssetBundle bundle = AssetBundle.LoadFromStream(str);
             GameObject bweep = bundle.LoadAsset<GameObject>("speaker");
             speaker = Instantiate(bweep);
+            speaker.name = "NameTagStore";
             GorillaParent.instance.vrrigParent.AddComponent<SpeakerManager>();
-            HarmonyPatches.ApplyHarmonyPatches();
-            Talkie.Mat = speaker.transform.GetChild(2).gameObject.GetComponent<Renderer>().material;
-            speaker.transform.GetChild(2).gameObject.SetActive(false);
+            PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 44100;
+            PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;
         }
         void Update()
         {
@@ -69,47 +68,60 @@ namespace WhoIsTalking
         private GameObject LoadSpeaker;
         private GameObject LSpeaker;
         private GameObject NameTag;
-        private int speed;
-        public Material Mat;
-        Looking looking;
+        private Color Pcol;
+        private bool Colorise = false;
         void Start()
         {
-            LoadSpeaker = Instantiate(GameObject.Find("speaker(Clone)"));
-            LoadSpeaker.transform.SetParent(gameObject.transform, true);
-            LoadSpeaker.transform.localPosition = new Vector3(0f,-1.727f,0f);
-            LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
-            speed = 300;
-            NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
-            NameTag.AddComponent<Looking>();
-            StartCoroutine(ExecuteAfterTime(2));
+            this.LoadSpeaker = Instantiate(GameObject.Find("NameTagStore"));
+            this.LoadSpeaker.transform.SetParent(gameObject.transform, true);
+            this.LoadSpeaker.transform.localPosition = new Vector3(0f,-1.727f,0f);
+            this.LoadSpeaker.gameObject.name = "PlayerNameTag";
+            this.LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
+            this.NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
+            this.NameTag.AddComponent<Looking>();
+            this.LSpeaker.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+            this.NameTag.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
+            this.StartCoroutine(ExecuteAfterTime(1));
         }
         void LateUpdate()
         {
-            this.LSpeaker.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
-            this.NameTag.GetComponent<Renderer>().material.shader = this.LSpeaker.GetComponent<Renderer>().material.shader;
-            this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
-            if (gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true)
+            if (PhotonNetwork.InRoom == true)
+            {
+                if (this.Colorise == true)
+                {
+                    this.Pcol = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
+                }
+                this.LSpeaker.GetComponent<Renderer>().material.color = Pcol;
+                this.NameTag.GetComponent<Renderer>().material.color = Pcol;
+            }
+            if (this.gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true)
             {
                 this.LSpeaker.SetActive(true);
-                this.LSpeaker.transform.Rotate(transform.up * speed * Time.deltaTime);
+                this.LSpeaker.transform.Rotate(transform.up * 300f * Time.deltaTime);
             }
             else
             {
                 this.LSpeaker.SetActive(false);
             }
+
+            if (this.gameObject.GetComponent<PhotonView>().Controller.NickName == "[{G}r_a_z_e]")
+            {
+                this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
+                this.NameTag.transform.Rotate(transform.up * 300f * Time.deltaTime);
+            }
+            else
+            {
+                this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
+            }
         }
         IEnumerator ExecuteAfterTime(float time)
         {
             yield return new WaitForSeconds(time);
-            this.Mat.color = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
-            this.LSpeaker.GetComponent<Renderer>().material = Mat; 
-            
+            this.Colorise = true;
         }
-
-     }
+      }
     class Looking : MonoBehaviour
     {
-        
         public Transform Lookat;
         void Start()
         {
@@ -119,20 +131,5 @@ namespace WhoIsTalking
         {
             transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
         }
-    }
-    
-}
-namespace WhoIsTalking.Patches
-{
-    [HarmonyPatch(typeof(PhotonVoiceNetwork))]
-    [HarmonyPatch("Awake", 0)]
-    internal class MicPatch
-    {
-        private static void Postfix(Player __instance)
-        {
-            PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 44100;
-            PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;
-        }
-
-    }
+    } 
 }
