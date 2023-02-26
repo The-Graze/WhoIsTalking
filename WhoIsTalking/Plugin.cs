@@ -42,8 +42,8 @@ namespace WhoIsTalking
             speaker = Instantiate(bweep);
             speaker.name = "NameTagStore";
             GorillaParent.instance.vrrigParent.AddComponent<SpeakerManager>();
-            PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 44100;
-            PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;
+            /*PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 4100;
+            PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;*/
         }
         void Update()
         {
@@ -64,7 +64,7 @@ namespace WhoIsTalking
         }
     }
       class Talkies : MonoBehaviour
-     {
+      {
         private GameObject LoadSpeaker;
         private GameObject LSpeaker;
         private GameObject NameTag;
