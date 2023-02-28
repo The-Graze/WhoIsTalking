@@ -69,6 +69,7 @@ namespace WhoIsTalking
         private GameObject LSpeaker;
         private GameObject NameTag;
         private Color Pcol;
+        bool maker = false;
         private bool Colorise = false;
         void Start()
         {
@@ -89,12 +90,12 @@ namespace WhoIsTalking
             {
                 if (this.Colorise == true)
                 {
-                    this.Pcol = this.LoadSpeaker.transform.parent.Find("gorilla").GetComponent<Renderer>().material.color;
+                    this.Pcol = this.GetComponent<VRRig>().mainSkin.material.color;
                 }
                 this.LSpeaker.GetComponent<Renderer>().material.color = Pcol;
                 this.NameTag.GetComponent<Renderer>().material.color = Pcol;
             }
-            if (this.gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true)
+            if (this.gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true || this.gameObject.GetComponent<PhotonVoiceView>().IsRecording == true)
             {
                 this.LSpeaker.SetActive(true);
                 this.LSpeaker.transform.Rotate(transform.up * 300f * Time.deltaTime);
@@ -107,12 +108,18 @@ namespace WhoIsTalking
             if (this.gameObject.GetComponent<PhotonView>().Controller.NickName == "[{G}r_a_z_e]")
             {
                 this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
-                this.NameTag.transform.Rotate(transform.up * 300f * Time.deltaTime);
+                maker = true;
             }
             else
             {
                 this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
             }
+            if (maker == true)
+            {
+                Colorise = false;
+                Pcol = Color.HSVToRGB(51, 100, 100);
+            }
+            
         }
         IEnumerator ExecuteAfterTime(float time)
         {
@@ -130,6 +137,10 @@ namespace WhoIsTalking
         void Update()
         {
             transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
+            if (Lookat == null && GameObject.Find("Shoulder Camera") == null )
+            {
+                Lookat = Camera.main.transform;
+            }
         }
     } 
 }
