@@ -15,6 +15,9 @@ using System.Collections;
 using HarmonyLib;
 using POpusCodec.Enums;
 using System.Linq;
+using WhoIsTalking.Patches;
+using GorillaLocomotion;
+using UnityEngine.Rendering;
 
 namespace WhoIsTalking
 {
@@ -29,118 +32,67 @@ namespace WhoIsTalking
     public class Plugin : BaseUnityPlugin
     {
         public GameObject speaker;
+        public Shader through;
         void Start()
-        {
-            Utilla.Events.GameInitialized += OnGameInitialized;
-          
-        }
+        {Utilla.Events.GameInitialized += OnGameInitialized;}
         void OnGameInitialized(object sender, EventArgs e)
         {
             Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
             AssetBundle bundle = AssetBundle.LoadFromStream(str);
             GameObject bweep = bundle.LoadAsset<GameObject>("speaker");
-            speaker = Instantiate(bweep);
+            speaker = bweep;
             speaker.name = "NameTagStore";
-            GorillaParent.instance.vrrigParent.AddComponent<SpeakerManager>();
-            /*PhotonVoiceNetwork.Instance.PrimaryRecorder.Bitrate = 4100;
-            PhotonVoiceNetwork.Instance.PrimaryRecorder.SamplingRate = SamplingRate.Sampling48000;*/
-        }
-        void Update()
-        {
-
+            HarmonyPatches.ApplyHarmonyPatches();
         }
     }
-    public class SpeakerManager : MonoBehaviour
+    class Talkies : MonoBehaviour
     {
-        void LateUpdate()
-        {
-            foreach (Transform child in transform)
-            {
-                if (child.gameObject.GetComponent<Talkies>() == null)
-                {
-                    child.gameObject.AddComponent<Talkies>();
-                }
-            }
-        }
-    }
-      class Talkies : MonoBehaviour
-      {
         private GameObject LoadSpeaker;
         private GameObject LSpeaker;
         private GameObject NameTag;
         private Color Pcol;
-        bool maker = false;
-        private bool Colorise = false;
+        private Renderer SpeakerRend;
+        private Renderer NameRend;
+        private PhotonVoiceView voice;
+        private PhotonView view;
+        private VRRig rig;
+        private Plugin p = FindObjectOfType<Plugin>();
+        private TextMesh nametagname;
+        private Transform Lookat;
         void Start()
         {
-            this.LoadSpeaker = Instantiate(GameObject.Find("NameTagStore"));
-            this.LoadSpeaker.transform.SetParent(gameObject.transform, true);
-            this.LoadSpeaker.transform.localPosition = new Vector3(0f,-1.727f,0f);
-            this.LoadSpeaker.gameObject.name = "PlayerNameTag";
-            this.LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
-            this.NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
-            this.NameTag.AddComponent<Looking>();
-            this.LSpeaker.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
-            this.NameTag.GetComponent<Renderer>().material.shader = Shader.Find("GUI/Text Shader");
-            this.StartCoroutine(ExecuteAfterTime(1));
-        }
-        void LateUpdate()
-        {
-            if (PhotonNetwork.InRoom == true)
-            {
-                if (this.Colorise == true)
-                {
-                    this.Pcol = this.GetComponent<VRRig>().mainSkin.material.color;
-                }
-                this.LSpeaker.GetComponent<Renderer>().material.color = Pcol;
-                this.NameTag.GetComponent<Renderer>().material.color = Pcol;
-            }
-            if (this.gameObject.GetComponent<PhotonVoiceView>().IsSpeaking == true || this.gameObject.GetComponent<PhotonVoiceView>().IsRecording == true)
-            {
-                this.LSpeaker.SetActive(true);
-                this.LSpeaker.transform.Rotate(transform.up * 300f * Time.deltaTime);
-            }
-            else
-            {
-                this.LSpeaker.SetActive(false);
-            }
-
-            if (this.gameObject.GetComponent<PhotonView>().Controller.NickName == "[{G}r_a_z_e]")
-            {
-                this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
-                maker = true;
-            }
-            else
-            {
-                this.NameTag.GetComponent<TextMesh>().text = this.gameObject.GetComponent<PhotonView>().Controller.NickName;
-            }
-            if (maker == true)
-            {
-                Colorise = false;
-                Pcol = Color.HSVToRGB(51, 100, 100);
-            }
-            
-        }
-        IEnumerator ExecuteAfterTime(float time)
-        {
-            yield return new WaitForSeconds(time);
-            this.Colorise = true;
-        }
-      }
-    class Looking : MonoBehaviour
-    {
-        public Transform Lookat;
-        void Start()
-        {
-            Lookat = GameObject.Find("Shoulder Camera").transform;
+            LoadSpeaker = Instantiate(p.speaker);
+            LoadSpeaker.transform.SetParent(gameObject.transform, true);
+            LoadSpeaker.transform.localPosition = new Vector3(0f, -1.727f, 0f);
+            LoadSpeaker.name = "PlayerNameTag";
+            LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
+            NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
+            SpeakerRend = LSpeaker.GetComponent<Renderer>();
+            NameRend = NameTag.GetComponent<Renderer>();
+            SpeakerRend.material.shader = Shader.Find("GUI/Text Shader");
+            NameRend.material.shader = Shader.Find("GUI/Text Shader");
+            voice = gameObject.GetComponent<PhotonVoiceView>();
+            rig = GetComponent<VRRig>();
+            Pcol = new Color(0, 0, 0);
+            nametagname = NameTag.GetComponent<TextMesh>();
+            view = GetComponent<PhotonView>();
+            Lookat = FindObjectOfType<GorillaLocomotion.Player>().transform;
         }
         void Update()
         {
-            transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
-            if (Lookat == null && GameObject.Find("Shoulder Camera") == null )
-            {
-                Lookat = Camera.main.transform;
-            }
+           SpeakerRend.enabled = voice.IsSpeaking || voice.IsRecording;
+           Pcol.r = rig.materialsToChangeTo[0].color.r;
+           Pcol.g = rig.materialsToChangeTo[0].color.g;
+           Pcol.b = rig.materialsToChangeTo[0].color.b;
+           mat = new Material(rig.materialsToChangeTo[rig.tempMatIndex]);
+           mat.shader = p.through;
+           Mat.material = mat;
+           nametagname.text = view.Controller.NickName;
+           SpeakerRend.material.color = Pcol;
+           NameRend.material.color = Pcol;
+           NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
+           Ind.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
+           LSpeaker.transform.Rotate(transform.up * 300f * Time.deltaTime);
         }
-    } 
+    }
 }
