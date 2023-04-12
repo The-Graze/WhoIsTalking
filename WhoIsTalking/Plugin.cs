@@ -84,14 +84,10 @@ namespace WhoIsTalking
            Pcol.r = rig.materialsToChangeTo[0].color.r;
            Pcol.g = rig.materialsToChangeTo[0].color.g;
            Pcol.b = rig.materialsToChangeTo[0].color.b;
-           mat = new Material(rig.materialsToChangeTo[rig.tempMatIndex]);
-           mat.shader = p.through;
-           Mat.material = mat;
            nametagname.text = view.Controller.NickName;
            SpeakerRend.material.color = Pcol;
            NameRend.material.color = Pcol;
            NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
-           Ind.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
            LSpeaker.transform.Rotate(transform.up * 300f * Time.deltaTime);
         }
     }
