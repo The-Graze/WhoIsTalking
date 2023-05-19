@@ -8,10 +8,7 @@ namespace WhoIsTalking.Patches
     {
         internal static void Postfix(VRRig __instance)
         {
-            if (__instance.GetComponent<Talkies>() == null)
-            {
-                __instance.gameObject.AddComponent<Talkies>();
-            }
+           __instance.gameObject.AddComponent<Talkies>();
         }
     }
 }

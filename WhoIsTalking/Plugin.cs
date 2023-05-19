@@ -50,15 +50,16 @@ namespace WhoIsTalking
         private GameObject LoadSpeaker;
         private GameObject LSpeaker;
         private GameObject NameTag;
-        private Color Pcol;
-        private Renderer SpeakerRend;
-        private Renderer NameRend;
+        public Color Pcol;
+        public Renderer SpeakerRend;
+        public Renderer NameRend;
         private PhotonVoiceView voice;
         private PhotonView view;
         private VRRig rig;
         private Plugin p = FindObjectOfType<Plugin>();
-        private TextMesh nametagname;
+        public TextMesh nametagname;
         private Transform Lookat;
+        Shader shader;
         void Start()
         {
             LoadSpeaker = Instantiate(p.speaker);
@@ -69,8 +70,9 @@ namespace WhoIsTalking
             NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
             SpeakerRend = LSpeaker.GetComponent<Renderer>();
             NameRend = NameTag.GetComponent<Renderer>();
-            SpeakerRend.material.shader = Shader.Find("GUI/Text Shader");
-            NameRend.material.shader = Shader.Find("GUI/Text Shader");
+            shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
+            SpeakerRend.material.shader = shader;
+            NameRend.material.shader = shader;
             voice = gameObject.GetComponent<PhotonVoiceView>();
             rig = GetComponent<VRRig>();
             Pcol = new Color(0, 0, 0);
