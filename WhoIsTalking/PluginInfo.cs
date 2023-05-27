@@ -7,6 +7,6 @@
     {
         public const string GUID = "com.graze.gorillatag.whoistalking";
         public const string Name = "WhoIsTalking";
-        public const string Version = "3.5.0";
+        public const string Version = "3.6.0";
     }
 }

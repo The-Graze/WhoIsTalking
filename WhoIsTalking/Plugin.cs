@@ -21,76 +21,98 @@ using UnityEngine.Rendering;
 
 namespace WhoIsTalking
 {
-    /// <summary>
-    /// This is your mod's main class.
-    /// </summary>
-
-    /* This attribute tells Utilla to look for [ModdedGameJoin] and [ModdedGameLeave] */
-    [ModdedGamemode]
-    [BepInDependency("org.legoandmars.gorillatag.utilla", "1.5.0")]
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
         public GameObject speaker;
         public Shader through;
+        public static volatile Plugin Instance;
         void Start()
-        {Utilla.Events.GameInitialized += OnGameInitialized;}
-        void OnGameInitialized(object sender, EventArgs e)
         {
             Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
             AssetBundle bundle = AssetBundle.LoadFromStream(str);
             GameObject bweep = bundle.LoadAsset<GameObject>("speaker");
             speaker = bweep;
             speaker.name = "NameTagStore";
+            Instance = this;
             HarmonyPatches.ApplyHarmonyPatches();
         }
     }
     class Talkies : MonoBehaviour
     {
-        private GameObject LoadSpeaker;
-        private GameObject LSpeaker;
-        private GameObject NameTag;
+        GameObject LoadSpeaker;
+        GameObject LSpeaker;
+        GameObject NameTag;
         public Color Pcol;
         public Renderer SpeakerRend;
         public Renderer NameRend;
-        private PhotonVoiceView voice;
-        private PhotonView view;
-        private VRRig rig;
-        private Plugin p = FindObjectOfType<Plugin>();
+        PhotonVoiceView voice;
+        PhotonView view;
+        public VRRig rig;
+        Plugin p = Plugin.Instance;
         public TextMesh nametagname;
-        private Transform Lookat;
+        Transform Lookat;
         Shader shader;
-        void Start()
+        Array data;
+        Spinner spwinner;
+
+        void Awake()
         {
-            LoadSpeaker = Instantiate(p.speaker);
-            LoadSpeaker.transform.SetParent(gameObject.transform, true);
+            LoadSpeaker = Instantiate(p.speaker, transform);
             LoadSpeaker.transform.localPosition = new Vector3(0f, -1.727f, 0f);
             LoadSpeaker.name = "PlayerNameTag";
             LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
             NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
+            nametagname = NameTag.GetComponent<TextMesh>();
             SpeakerRend = LSpeaker.GetComponent<Renderer>();
             NameRend = NameTag.GetComponent<Renderer>();
             shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
             SpeakerRend.material.shader = shader;
             NameRend.material.shader = shader;
-            voice = gameObject.GetComponent<PhotonVoiceView>();
-            rig = GetComponent<VRRig>();
+            //rig = GetComponent<VRRig>();
+            Lookat = FindObjectOfType<GorillaLocomotion.Player>().transform;
             Pcol = new Color(0, 0, 0);
             nametagname = NameTag.GetComponent<TextMesh>();
-            view = GetComponent<PhotonView>();
-            Lookat = FindObjectOfType<GorillaLocomotion.Player>().transform;
+            spwinner = LSpeaker.AddComponent<Spinner>();
+            spwinner.Speed = 1;
+        }
+
+        void Start()
+        {
+            view = rig.photonView;
+            voice = rig.gameObject.GetComponent<PhotonVoiceView>();
         }
         void Update()
         {
-           SpeakerRend.enabled = voice.IsSpeaking || voice.IsRecording;
-           Pcol.r = rig.materialsToChangeTo[0].color.r;
-           Pcol.g = rig.materialsToChangeTo[0].color.g;
-           Pcol.b = rig.materialsToChangeTo[0].color.b;
-           nametagname.text = view.Controller.NickName;
-           SpeakerRend.material.color = Pcol;
-           NameRend.material.color = Pcol;
-           NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
-           LSpeaker.transform.Rotate(transform.up * 300f * Time.deltaTime);
+            Pcol.r = rig.materialsToChangeTo[0].color.r;
+            Pcol.g = rig.materialsToChangeTo[0].color.g;
+            Pcol.b = rig.materialsToChangeTo[0].color.b;
+            nametagname.text = view.Controller.NickName;
+            SpeakerRend.material.color = Pcol;
+            NameRend.material.color = Pcol;
+            NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
+            if (view != null) 
+            {
+                nametagname.text = view.Owner.NickName;
+            }
+            else
+            {
+                NameRend.enabled = false;
+            }
+            if(voice != null) 
+            {
+                SpeakerRend.enabled = voice.IsSpeaking || voice.IsRecording;
+            }
+            else
+            {
+                SpeakerRend.enabled = false;
+            }
+            if (view == null || voice == null)
+            {
+                SpeakerRend.enabled = false;
+                NameRend.enabled = false;
+                Start();
+            }
         }
     }
 }
