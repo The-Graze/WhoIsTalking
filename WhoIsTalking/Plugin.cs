@@ -29,17 +29,21 @@ namespace WhoIsTalking
         public GameObject speaker;
         public static volatile Plugin Instance;
         public Shader shader;
-        void Start()
+        void Awake()
         {
-            selfName = Config.Bind("Settings", "Have a NameTag On Urself?", true, "Lets you pick if you have a nametag over your own head");
             Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
             AssetBundle bundle = AssetBundle.LoadFromStream(str);
             GameObject bweep = bundle.LoadAsset<GameObject>("speaker");
             speaker = bweep;
             speaker.name = "NameTagStore";
             Instance = this;
-            shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
+            Utilla.Events.GameInitialized += OnGameInitialized;
+            selfName = Config.Bind("Settings", "Have a NameTag On Urself?", true, "Lets you pick if you have a nametag over your own head");
             HarmonyPatches.ApplyHarmonyPatches();
+        }
+        void OnGameInitialized(object sender, EventArgs e)
+        {
+            shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
         }
     }
     class Talkies : MonoBehaviour
