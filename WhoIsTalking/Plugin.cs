@@ -27,6 +27,7 @@ namespace WhoIsTalking
         public GameObject speaker;
         public Shader through;
         public static volatile Plugin Instance;
+        public Shader shader;
         void Start()
         {
             Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
@@ -35,6 +36,7 @@ namespace WhoIsTalking
             speaker = bweep;
             speaker.name = "NameTagStore";
             Instance = this;
+            shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
             HarmonyPatches.ApplyHarmonyPatches();
         }
     }
@@ -52,7 +54,6 @@ namespace WhoIsTalking
         Plugin p = Plugin.Instance;
         public TextMesh nametagname;
         Transform Lookat;
-        Shader shader;
         Array data;
         Spinner spwinner;
 
@@ -66,9 +67,8 @@ namespace WhoIsTalking
             nametagname = NameTag.GetComponent<TextMesh>();
             SpeakerRend = LSpeaker.GetComponent<Renderer>();
             NameRend = NameTag.GetComponent<Renderer>();
-            shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
-            SpeakerRend.material.shader = shader;
-            NameRend.material.shader = shader;
+            SpeakerRend.material.shader = p.shader;
+            NameRend.material.shader = p.shader;
             //rig = GetComponent<VRRig>();
             Lookat = FindObjectOfType<GorillaLocomotion.Player>().transform;
             Pcol = new Color(0, 0, 0);
