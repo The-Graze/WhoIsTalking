@@ -63,31 +63,38 @@ namespace WhoIsTalking
         Spinner spwinner;
         void Start()
         {
-            if (rig.photonView.Owner.IsLocal && p.selfName.Value == false)
+            if (rig.isOfflineVRRig)
             {
                 Destroy(this);
             }
             else
             {
-                LoadSpeaker = Instantiate(p.speaker, transform);
-                LoadSpeaker.transform.localPosition = new Vector3(0f, -1.727f, 0f);
-                LoadSpeaker.name = "PlayerNameTag";
-                LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
-                NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
-                nametagname = NameTag.GetComponent<TextMesh>();
-                SpeakerRend = LSpeaker.GetComponent<Renderer>();
-                NameRend = NameTag.GetComponent<Renderer>();
-                SpeakerRend.material.shader = p.shader;
-                NameRend.material.shader = p.shader;
-                //rig = GetComponent<VRRig>();
-                Lookat = GorillaLocomotion.Player.Instance.transform;
-                Pcol = new Color(0, 0, 0);
-                nametagname = NameTag.GetComponent<TextMesh>();
-                spwinner = LSpeaker.AddComponent<Spinner>();
-                spwinner.Speed = 1;
+                if (rig.photonView.Owner.IsLocal && p.selfName.Value == false || rig.isOfflineVRRig)
+                {
+                    Destroy(this);
+                }
+                else
+                {
+                    LoadSpeaker = Instantiate(p.speaker, transform);
+                    LoadSpeaker.transform.localPosition = new Vector3(0f, -1.727f, 0f);
+                    LoadSpeaker.name = "PlayerNameTag";
+                    LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
+                    NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
+                    nametagname = NameTag.GetComponent<TextMesh>();
+                    SpeakerRend = LSpeaker.GetComponent<Renderer>();
+                    NameRend = NameTag.GetComponent<Renderer>();
+                    SpeakerRend.material.shader = p.shader;
+                    NameRend.material.shader = p.shader;
+                    //rig = GetComponent<VRRig>();
+                    Lookat = GorillaLocomotion.Player.Instance.transform;
+                    Pcol = new Color(0, 0, 0);
+                    nametagname = NameTag.GetComponent<TextMesh>();
+                    spwinner = LSpeaker.AddComponent<Spinner>();
+                    spwinner.Speed = 1;
+                }
+                voice = rig.gameObject.GetComponent<PhotonVoiceView>();
+                view = rig.photonView;
             }
-            voice = rig.gameObject.GetComponent<PhotonVoiceView>();
-            view = rig.photonView;
         }
         void Update()
         {
