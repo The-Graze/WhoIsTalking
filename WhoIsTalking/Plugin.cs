@@ -29,7 +29,7 @@ namespace WhoIsTalking
         public GameObject speaker;
         public static volatile Plugin Instance;
         public Shader shader;
-        void Awake()
+        void Start()
         {
             Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
             AssetBundle bundle = AssetBundle.LoadFromStream(str);
