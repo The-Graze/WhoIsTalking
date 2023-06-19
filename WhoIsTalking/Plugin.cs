@@ -43,7 +43,7 @@ namespace WhoIsTalking
         }
         void OnGameInitialized(object sender, EventArgs e)
         {
-            shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
+          shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
         }
     }
     class Talkies : MonoBehaviour
@@ -51,7 +51,6 @@ namespace WhoIsTalking
         GameObject LoadSpeaker;
         GameObject LSpeaker;
         GameObject NameTag;
-        public Color Pcol;
         public Renderer SpeakerRend;
         public Renderer NameRend;
         PhotonVoiceView voice;
@@ -87,7 +86,6 @@ namespace WhoIsTalking
                     NameRend.material.shader = p.shader;
                     //rig = GetComponent<VRRig>();
                     Lookat = GorillaLocomotion.Player.Instance.transform;
-                    Pcol = new Color(0, 0, 0);
                     nametagname = NameTag.GetComponent<TextMesh>();
                     spwinner = LSpeaker.AddComponent<Spinner>();
                     spwinner.Speed = 1;
@@ -96,18 +94,24 @@ namespace WhoIsTalking
                 view = rig.photonView;
             }
         }
-        void Update()
+        void LateUpdate()
         {
-            Pcol.r = rig.materialsToChangeTo[0].color.r;
-            Pcol.g = rig.materialsToChangeTo[0].color.g;
-            Pcol.b = rig.materialsToChangeTo[0].color.b;
             nametagname.text = view.Controller.NickName;
-            SpeakerRend.material.color = Pcol;
-            NameRend.material.color = Pcol;
+            SpeakerRend.material.color = Pcol();
+            NameRend.material.color = Pcol();
             NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
             nametagname.text = view.Owner.NickName;
 
             SpeakerRend.enabled = voice.IsSpeaking || voice.IsRecording;
+        }
+        public Color Pcol()
+        {
+            Color temp = new Color();
+            temp.r = rig.materialsToChangeTo[rig.tempMatIndex].color.r;
+            temp.g = rig.materialsToChangeTo[rig.tempMatIndex].color.g;
+            temp.b = rig.materialsToChangeTo[rig.tempMatIndex].color.b;
+            temp.a = 1;
+            return temp;
         }
     }
 }
