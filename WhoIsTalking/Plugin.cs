@@ -53,7 +53,7 @@ namespace WhoIsTalking
         GameObject NameTag;
         public Renderer SpeakerRend;
         public Renderer NameRend;
-        PhotonVoiceView voice;
+        public PhotonVoiceView voice;
         public PhotonView view;
         public VRRig rig;
         Plugin p = Plugin.Instance;
@@ -68,12 +68,6 @@ namespace WhoIsTalking
             }
             else
             {
-                if (rig.photonView.Owner.IsLocal && p.selfName.Value == false || rig.isOfflineVRRig)
-                {
-                    Destroy(this);
-                }
-                else
-                {
                     LoadSpeaker = Instantiate(p.speaker, transform);
                     LoadSpeaker.transform.localPosition = new Vector3(0f, -1.727f, 0f);
                     LoadSpeaker.name = "PlayerNameTag";
@@ -84,14 +78,10 @@ namespace WhoIsTalking
                     NameRend = NameTag.GetComponent<Renderer>();
                     SpeakerRend.material.shader = p.shader;
                     NameRend.material.shader = p.shader;
-                    //rig = GetComponent<VRRig>();
                     Lookat = GorillaLocomotion.Player.Instance.transform;
                     nametagname = NameTag.GetComponent<TextMesh>();
                     spwinner = LSpeaker.AddComponent<Spinner>();
                     spwinner.Speed = 1;
-                }
-                voice = rig.gameObject.GetComponent<PhotonVoiceView>();
-                view = rig.photonView;
             }
         }
         void LateUpdate()

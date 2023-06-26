@@ -1,15 +1,19 @@
 using HarmonyLib;
+using Photon.Pun;
+using Photon.Voice.PUN;
 
 namespace WhoIsTalking.Patches
 {
-    [HarmonyPatch(typeof(VRRig))]
-    [HarmonyPatch("Awake", MethodType.Normal)]
+    [HarmonyPatch(typeof(VRRigSerializer))]
+    [HarmonyPatch("OnInstantiateSetup", MethodType.Normal)]
     internal class VRRigPatch
     {
-        internal static void Postfix(VRRig __instance)
+        internal static void Postfix(VRRigSerializer __instance)
         {
-            __instance.gameObject.AddComponent<Talkies>();
-            __instance.gameObject.GetComponent<Talkies>().rig = __instance;
+            __instance.vrrig.gameObject.AddComponent<Talkies>();
+            __instance.vrrig.GetComponent<Talkies>().rig = __instance.vrrig;
+            __instance.vrrig.GetComponent<Talkies>().view = __instance.GetComponent<PhotonView>();
+            __instance.vrrig.GetComponent<Talkies>().voice = __instance.GetComponent<PhotonVoiceView>();
         }
     }
 }
