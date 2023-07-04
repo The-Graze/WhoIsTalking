@@ -10,10 +10,19 @@ namespace WhoIsTalking.Patches
     {
         internal static void Postfix(VRRigSerializer __instance)
         {
-            __instance.vrrig.gameObject.AddComponent<Talkies>();
-            __instance.vrrig.GetComponent<Talkies>().rig = __instance.vrrig;
-            __instance.vrrig.GetComponent<Talkies>().view = __instance.GetComponent<PhotonView>();
-            __instance.vrrig.GetComponent<Talkies>().voice = __instance.GetComponent<PhotonVoiceView>();
+            if (__instance.vrrig.gameObject.GetComponent<Talkies>() == null)
+            {
+                __instance.vrrig.gameObject.AddComponent<Talkies>();
+                __instance.vrrig.GetComponent<Talkies>().rig = __instance.vrrig;
+                __instance.vrrig.GetComponent<Talkies>().view = __instance.GetComponent<PhotonView>();
+                __instance.vrrig.GetComponent<Talkies>().voice = __instance.GetComponent<PhotonVoiceView>();
+            }
+            else
+            {
+                __instance.vrrig.GetComponent<Talkies>().rig = __instance.vrrig;
+                __instance.vrrig.GetComponent<Talkies>().view = __instance.GetComponent<PhotonView>();
+                __instance.vrrig.GetComponent<Talkies>().voice = __instance.GetComponent<PhotonVoiceView>();
+            }
         }
     }
 }
