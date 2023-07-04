@@ -1,5 +1,5 @@
 # WhoIsTalking
 
-(image is outdated, no longer through walls)
 
-![image](https://user-images.githubusercontent.com/82724623/206436075-b47b4aa3-b850-468b-94bf-bfd3b0829b84.png)
+![image](https://github.com/The-Graze/WhoIsTalking/assets/82724623/175e80e7-43ef-4921-a8c6-0edb65d885f7)
+
