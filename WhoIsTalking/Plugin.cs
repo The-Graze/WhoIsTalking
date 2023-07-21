@@ -25,10 +25,10 @@ namespace WhoIsTalking
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
-        public ConfigEntry<bool> selfName;
         public GameObject speaker;
         public static volatile Plugin Instance;
         public Shader shader;
+        public float viewDistance = 3.5f;
         void Start()
         {
             Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
@@ -39,6 +39,10 @@ namespace WhoIsTalking
             Instance = this;
             Utilla.Events.GameInitialized += OnGameInitialized;
             HarmonyPatches.ApplyHarmonyPatches();
+        }
+        void Update()
+        {
+            viewDistance = 3.5f;
         }
         void OnGameInitialized(object sender, EventArgs e)
         {
@@ -60,6 +64,7 @@ namespace WhoIsTalking
         Transform Lookat;
         Spinner spwinner;
         Color Orange;
+        float Distance;
         void Start()
         {
             if (rig.isOfflineVRRig)
@@ -88,14 +93,29 @@ namespace WhoIsTalking
         void LateUpdate()
         {
             nametagname.text = view.Controller.NickName;
-            SpeakerRend.material.color = Pcol();
-            NameRend.material.color = Pcol();
             NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
-            nametagname.text = view.Owner.NickName;
-
-            SpeakerRend.enabled = voice.IsSpeaking || voice.IsRecording;
+            Distance = Vector3.Distance(transform.position, Camera.main.transform.position);
+            Cansee();
+            Plugin.Instance.viewDistance = 3.5f;
         }
-        public Color Pcol()
+        bool Cansee()
+        {
+            if (Distance <= Plugin.Instance.viewDistance)
+            {
+                NameRend.enabled = true;
+                SpeakerRend.enabled = voice.IsSpeaking || voice.IsRecording;
+                SpeakerRend.material.color = Pcol();
+                NameRend.material.color = Pcol();
+                return true;
+            }
+            else
+            {
+                SpeakerRend.enabled = false;
+                NameRend.enabled = false;
+                return false;
+            }
+        }
+        public Color Pcol() 
         {
             Color temp = new Color();
             if (rig.setMatIndex == 2)
