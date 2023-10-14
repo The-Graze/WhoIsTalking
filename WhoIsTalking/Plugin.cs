@@ -1,24 +1,12 @@
 ﻿using BepInEx;
-using Mono.Math.Prime.Generator;
 using Photon.Pun;
-using Photon.Realtime;
 using Photon.Voice.PUN;
-using Photon.Voice.Unity;
-using PlayFab.ClientModels;
 using System;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
-using Utilla;
-using System.Collections;
-using HarmonyLib;
-using POpusCodec.Enums;
-using System.Linq;
 using WhoIsTalking.Patches;
-using GorillaLocomotion;
-using UnityEngine.Rendering;
-using BepInEx.Configuration;
 
 namespace WhoIsTalking
 {
@@ -38,6 +26,7 @@ namespace WhoIsTalking
             speaker.name = "NameTagStore";
             Instance = this;
             Utilla.Events.GameInitialized += OnGameInitialized;
+            Config.Bind("Settings", "Camera Look Target", false);
             HarmonyPatches.ApplyHarmonyPatches();
         }
         void Update()
@@ -52,17 +41,25 @@ namespace WhoIsTalking
     class Talkies : MonoBehaviour
     {
         GameObject LoadSpeaker;
+        GameObject LoadSpeaker2;
         GameObject LSpeaker;
+        GameObject Speaker2;
         GameObject NameTag;
+        GameObject NameTag2;
         Renderer SpeakerRend;
+        Renderer SpeakerRend2;
         Renderer NameRend;
+        Renderer NameRend2;
         public PhotonVoiceView voice;
         public PhotonView view;
         public VRRig rig;
         Plugin p = Plugin.Instance;
         TextMesh nametagname;
+        TextMesh nametagname2;
         Transform Lookat;
+        Transform Lookat2;
         Spinner spwinner;
+        Spinner spwinner2;
         Color Orange;
         float Distance;
         void Start()
@@ -74,29 +71,47 @@ namespace WhoIsTalking
             else
             {
                 LoadSpeaker = Instantiate(p.speaker, transform);
+                LoadSpeaker2 = Instantiate(p.speaker, transform);
                 LoadSpeaker.transform.localPosition = new Vector3(0f, -1.727f, 0f);
-                LoadSpeaker.name = "PlayerNameTag";
+                LoadSpeaker2.transform.localPosition = new Vector3(0f, -1.727f, 0f);
+                LoadSpeaker.name = "fpPlayerNameTag";
+                LoadSpeaker2.name = "tpPlayerNameTag";
+                LoadSpeaker.layer = LayerMask.NameToLayer("GorillaCosmeticParticle");
+                LoadSpeaker2.layer = LayerMask.NameToLayer("Gorilla Spectator");
                 LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
                 NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
+                NameTag2 = LoadSpeaker2.transform.GetChild(1).gameObject;
+                Speaker2 = LoadSpeaker2.transform.GetChild(0).gameObject;
                 nametagname = NameTag.GetComponent<TextMesh>();
+                nametagname2 = NameTag2.GetComponent<TextMesh>();
                 SpeakerRend = LSpeaker.GetComponent<Renderer>();
+                SpeakerRend2 = Speaker2.GetComponent<Renderer>();
                 NameRend = NameTag.GetComponent<Renderer>();
+                NameRend2 = NameTag2.GetComponent<Renderer>();
                 SpeakerRend.material.shader = p.shader;
                 NameRend.material.shader = p.shader;
-                Lookat = Camera.main.transform;
                 nametagname = NameTag.GetComponent<TextMesh>();
                 spwinner = LSpeaker.AddComponent<Spinner>();
+                spwinner2 = Speaker2.AddComponent<Spinner>();
                 spwinner.Speed = 1;
+                spwinner2.Speed = 1;
                 Orange = new Color(1, 0.3288f, 0, 1);
+                Lookat = Camera.main.transform;
+                Lookat2 = GameObject.Find("Shoulder Camera").transform;
             }
         }
         void LateUpdate()
         {
             nametagname.text = view.Controller.NickName;
-            NameTag.transform.LookAt(new Vector3(Lookat.position.x, transform.position.y, Lookat.position.z));
+            nametagname2.text = view.Controller.NickName;
+            NameTag.transform.LookAt(Lookat);
+            NameTag2.transform.LookAt(Lookat2);
             Distance = Vector3.Distance(transform.position, Camera.main.transform.position);
             Cansee();
             Plugin.Instance.viewDistance = 3.5f;
+            SpeakerRend2.enabled = voice.IsSpeaking || voice.IsRecording;
+            SpeakerRend2.material.color = Pcol();
+            NameRend2.material.color = Pcol();
         }
         bool Cansee()
         {
