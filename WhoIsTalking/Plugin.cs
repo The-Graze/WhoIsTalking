@@ -79,9 +79,13 @@ namespace WhoIsTalking
                 LoadSpeaker.layer = LayerMask.NameToLayer("GorillaCosmeticParticle");
                 LoadSpeaker2.layer = LayerMask.NameToLayer("Gorilla Spectator");
                 LSpeaker = LoadSpeaker.transform.GetChild(0).gameObject;
+                LSpeaker.layer = LayerMask.NameToLayer("GorillaCosmeticParticle");
                 NameTag = LoadSpeaker.transform.GetChild(1).gameObject;
+                NameTag.layer = LayerMask.NameToLayer("GorillaCosmeticParticle");
                 NameTag2 = LoadSpeaker2.transform.GetChild(1).gameObject;
+                NameTag2.layer = LayerMask.NameToLayer("Gorilla Spectator");
                 Speaker2 = LoadSpeaker2.transform.GetChild(0).gameObject;
+                Speaker2.layer = LayerMask.NameToLayer("Gorilla Spectator");
                 nametagname = NameTag.GetComponent<TextMesh>();
                 nametagname2 = NameTag2.GetComponent<TextMesh>();
                 SpeakerRend = LSpeaker.GetComponent<Renderer>();
@@ -89,7 +93,9 @@ namespace WhoIsTalking
                 NameRend = NameTag.GetComponent<Renderer>();
                 NameRend2 = NameTag2.GetComponent<Renderer>();
                 SpeakerRend.material.shader = p.shader;
+                SpeakerRend2.material.shader = p.shader;
                 NameRend.material.shader = p.shader;
+                NameRend2.material.shader = p.shader;
                 nametagname = NameTag.GetComponent<TextMesh>();
                 spwinner = LSpeaker.AddComponent<Spinner>();
                 spwinner2 = Speaker2.AddComponent<Spinner>();
@@ -97,7 +103,7 @@ namespace WhoIsTalking
                 spwinner2.Speed = 1;
                 Orange = new Color(1, 0.3288f, 0, 1);
                 Lookat = Camera.main.transform;
-                Lookat2 = GameObject.Find("Shoulder Camera").transform;
+                Lookat2 = Camera.allCameras[1].transform;
             }
         }
         void LateUpdate()
