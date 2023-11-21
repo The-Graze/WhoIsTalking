@@ -7,3 +7,7 @@
 
 ## Disclaimers
 This product is not affiliated with Gorilla Tag or Another Axiom LLC and is not endorsed or otherwise sponsored by Another Axiom LLC. Portions of the materials contained herein are property of Another Axiom LLC. ©2022 Another Axiom LLC.
+
+## Thanks
+
+again to [RealGrant]([https://www.google.com](https://github.com/RealGrant)https://github.com/RealGrant) For the assetbundle export script
