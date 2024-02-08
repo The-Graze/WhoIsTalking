@@ -16,10 +16,15 @@ namespace WhoIsTalking
 
         Color Orange = new Color(1, 0.3288f, 0, 1);
 
-        void Start()
+
+        void Awake()
         {
-            SetUpNameTag();
+            if(NameFP == null && NameTP == null) 
+            { 
+                SetUpNameTag();
+            }
         }
+
         void OnEnable()
         {
             GetInfo();
