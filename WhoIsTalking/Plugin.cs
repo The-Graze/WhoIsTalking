@@ -29,7 +29,6 @@ namespace WhoIsTalking
                     t.gameObject.AddComponent<NameTagHandler>();
                 }
             }
-            AssetRef.shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
         }
     }
 }
