@@ -2,6 +2,7 @@
 using Photon.Pun;
 using Photon.Voice.PUN;
 using System;
+using System.Collections;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -11,15 +12,20 @@ using WhoIsTalking.Patches;
 
 namespace WhoIsTalking
 {
-    [BepInDependency("org.legoandmars.gorillatag.utilla")]
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
-        public Plugin()
+        void Start()
         {
-            Utilla.Events.GameInitialized += GameInit;
+            StartCoroutine(Wait());
         }
-        private void GameInit(object sender, EventArgs e)
+
+        IEnumerator Wait()
+        {
+            yield return new WaitForSeconds(3);
+            GameInit();
+        }
+        private void GameInit()
         {
             AssetRef.shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
             foreach (Transform t in GameObject.Find("Player Objects/RigCache/Rig Parent").transform)
