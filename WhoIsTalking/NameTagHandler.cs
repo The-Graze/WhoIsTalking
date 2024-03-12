@@ -24,11 +24,6 @@ namespace WhoIsTalking
                 SetUpNameTag();
             }
         }
-
-        void OnEnable()
-        {
-            GetInfo();
-        }
         void SetUpNameTag()
         {
             SetUpNameTagInstance(ref NameFP, "First Person NameTag", "GorillaCosmeticParticle");
@@ -65,6 +60,11 @@ namespace WhoIsTalking
             rig = GetComponent<VRRig>();
             player = rig.OwningNetPlayer;
             voice = VRRigCache.rigsInUse[player].voiceView;
+        }
+
+        void FixedUpdate()
+        {
+            GetInfo();
         }
 
         void Update()
