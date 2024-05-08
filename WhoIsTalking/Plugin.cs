@@ -15,22 +15,22 @@ namespace WhoIsTalking
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
-        void Start()
-        {
-            StartCoroutine(Wait());
-        }
+        bool ran;
 
-        IEnumerator Wait()
+        void Update()
         {
-            yield return new WaitForSeconds(3);
-            GameInit();
+            if (PhotonNetwork.IsConnectedAndReady && !ran)
+            {
+                GameInit();
+                ran = true;
+            }
         }
         private void GameInit()
         {
             AssetRef.shader = GameObject.Find("motdtext").GetComponent<Text>().material.shader;
-            foreach (Transform t in GameObject.Find("Player Objects/RigCache/Rig Parent").transform)
+            foreach (VRRig t in Resources.FindObjectsOfTypeAll<VRRig>())
             {
-                if (t.GetComponent<VRRig>())
+                if (t.GetComponent<VRRig>() && !t.isOfflineVRRig)
                 {
                     t.gameObject.AddComponent<NameTagHandler>();
                 }
