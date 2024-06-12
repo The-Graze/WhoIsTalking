@@ -79,7 +79,7 @@ namespace WhoIsTalking
 
                 TPSpeakerRend.material.color = color;
                 TPRend.material.color = color;
-                TPRend.transform.LookAt(GorillaTagger.Instance.thirdPersonCamera.transform.position);
+                TPRend.transform.LookAt(GorillaTagger.Instance.thirdPersonCamera.transform.GetChild(0).position);
 
 
                 TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
