@@ -4,18 +4,14 @@ using System.Reflection;
 
 namespace WhoIsTalking.Patches
 {
-    /// <summary>
-    /// This class handles applying harmony patches to the game.
-    /// You should not need to modify this class.
-    /// </summary>
-    public class HarmonyPatches
+    public class HarmonyP
     {
-        private static Harmony instance;
+        private static Harmony instance;    
 
         public static bool IsPatched { get; private set; }
         public const string InstanceId = PluginInfo.GUID;
 
-        internal static void ApplyHarmonyPatches()
+        internal static void ApplyPatches()
         {
             if (!IsPatched)
             {

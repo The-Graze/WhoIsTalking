@@ -15,8 +15,6 @@ namespace WhoIsTalking
         PhotonVoiceView voice;
 
         Color Orange = new Color(1, 0.3288f, 0, 1);
-
-
         void Awake()
         {
             if(NameFP == null && NameTP == null) 
@@ -55,18 +53,12 @@ namespace WhoIsTalking
             nameTag.name = name;
         }
 
-        void GetInfo()
+        public void GetInfo()
         {
             rig = GetComponent<VRRig>();
             player = rig.OwningNetPlayer;
             voice = VRRigCache.rigsInUse[player].voiceView;
         }
-
-        void FixedUpdate()
-        {
-            GetInfo();
-        }
-
         void Update()
         {
             try

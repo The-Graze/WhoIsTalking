@@ -12,7 +12,7 @@ namespace WhoIsTalking
         static Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker");
         static AssetBundle bundle = AssetBundle.LoadFromStream(str);
         public static GameObject Tag = bundle.LoadAsset<GameObject>("speaker");
-        public static Shader shader;
+        public static Shader shader = Shader.Find("UI/Default");
     }
 }
     
