@@ -9,6 +9,7 @@ namespace WhoIsTalking
         GameObject NameFP, NameTP;
         Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
         TextMesh FPText, TPText;
+        Camera ThirdPCam;
 
         VRRig rig;
         NetPlayer player;
@@ -39,6 +40,8 @@ namespace WhoIsTalking
             TPRend.material.shader = AssetRef.shader;
             TPText = TPRend.GetComponent<TextMesh>();
             TPSpeakerRend.gameObject.AddComponent<Spinner>().Speed = 1f;
+
+            ThirdPCam = GorillaTagger.Instance.thirdPersonCamera.transform.GetChild(0).GetComponent<Camera>();
         }
 
         void SetUpNameTagInstance(ref GameObject nameTag, string name, string layerName)
@@ -70,7 +73,7 @@ namespace WhoIsTalking
 
                 TPSpeakerRend.material.color = ColourHandling();
                 TPRend.material.color = ColourHandling();
-                TPRend.transform.LookAt(GorillaTagger.Instance.thirdPersonCamera.transform.GetChild(0).position);
+                TPRend.transform.LookAt(ThirdPCam.transform.position);
                 TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
                 TPText.text = player.NickName;
                 FPText.text = player.NickName;
