@@ -64,16 +64,13 @@ namespace WhoIsTalking
             try
             {
                 FirstPersonViewDistance();
-                Color color = ColourHandling();
-                FPRend.material.color = color;
-                FPSpeakerRend.material.color = color;
+                FPRend.material.color = ColourHandling();
+                FPSpeakerRend.material.color = ColourHandling();
                 FPRend.transform.LookAt(Camera.main.transform.position);
 
-                TPSpeakerRend.material.color = color;
-                TPRend.material.color = color;
+                TPSpeakerRend.material.color = ColourHandling();
+                TPRend.material.color = ColourHandling();
                 TPRend.transform.LookAt(GorillaTagger.Instance.thirdPersonCamera.transform.GetChild(0).position);
-
-
                 TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
                 TPText.text = player.NickName;
                 FPText.text = player.NickName;
