@@ -9,12 +9,12 @@ namespace WhoIsTalking
         GameObject NameFP, NameTP;
         Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
         TextMesh FPText, TPText;
+        Camera ThirdPCam;
 
         VRRig rig;  
         NetPlayer player;
         PhotonVoiceView voice;
 
-        Camera ThirdPCam;
         Color Orange = new Color(1, 0.3288f, 0, 1);
         void Awake()
         {
