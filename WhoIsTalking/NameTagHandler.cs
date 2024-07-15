@@ -11,7 +11,7 @@ namespace WhoIsTalking
         TextMesh FPText, TPText;
 
         VRRig rig;
-        Player player;
+        NetPlayer player;
         PhotonVoiceView voice;
 
         Color Orange = new Color(1, 0.3288f, 0, 1);
@@ -56,7 +56,7 @@ namespace WhoIsTalking
         public void GetInfo()
         {
             rig = GetComponent<VRRig>();
-            player = rig.creator;
+            player = rig.OwningNetPlayer;
             voice = VRRigCache.rigsInUse[rig.OwningNetPlayer].voiceView;
         }
         void Update()
