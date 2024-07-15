@@ -10,10 +10,11 @@ namespace WhoIsTalking
         Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
         TextMesh FPText, TPText;
 
-        VRRig rig;
-        Player player;
+        VRRig rig;  
+        NetPlayer player;
         PhotonVoiceView voice;
 
+        Camera ThirdPCam;
         Color Orange = new Color(1, 0.3288f, 0, 1);
         void Awake()
         {
@@ -39,6 +40,8 @@ namespace WhoIsTalking
             TPRend.material.shader = AssetRef.shader;
             TPText = TPRend.GetComponent<TextMesh>();
             TPSpeakerRend.gameObject.AddComponent<Spinner>().Speed = 1f;
+
+            ThirdPCam = YizziCamModV2.CameraController.Instance.ThirdPersonCamera;
         }
 
         void SetUpNameTagInstance(ref GameObject nameTag, string name, string layerName)
@@ -56,7 +59,7 @@ namespace WhoIsTalking
         public void GetInfo()
         {
             rig = GetComponent<VRRig>();
-            player = rig.creator;
+            player = rig.OwningNetPlayer;
             voice = VRRigCache.rigsInUse[rig.OwningNetPlayer].voiceView;
         }
         void Update()
@@ -64,16 +67,13 @@ namespace WhoIsTalking
             try
             {
                 FirstPersonViewDistance();
-                Color color = ColourHandling();
-                FPRend.material.color = color;
-                FPSpeakerRend.material.color = color;
+                FPRend.material.color = ColourHandling();
+                FPSpeakerRend.material.color = ColourHandling();
                 FPRend.transform.LookAt(Camera.main.transform.position);
 
-                TPSpeakerRend.material.color = color;
-                TPRend.material.color = color;
-                TPRend.transform.LookAt(GorillaTagger.Instance.thirdPersonCamera.transform.GetChild(0).position);
-
-
+                TPSpeakerRend.material.color = ColourHandling();
+                TPRend.material.color = ColourHandling();
+                TPRend.transform.LookAt(ThirdPCam.transform.position);
                 TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
                 TPText.text = player.NickName;
                 FPText.text = player.NickName;
@@ -98,12 +98,9 @@ namespace WhoIsTalking
             switch (rig.setMatIndex)
             {
                 default:
-                    return new Color(
-                        rig.materialsToChangeTo[rig.tempMatIndex].color.r,
-                        rig.materialsToChangeTo[rig.tempMatIndex].color.g,
-                        rig.materialsToChangeTo[rig.tempMatIndex].color.b,
-                        1
-                    );
+                    return rig.playerColor;
+                case 1: 
+                    return Color.red;
                 case 2:
                 case 11:
                     return Orange;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using HarmonyLib;
 
-namespace WhoIsTalking.Patches
+namespace WhoIsTalking
 {
     [HarmonyPatch(typeof(VRRig))]
     [HarmonyPatch("UpdateName", MethodType.Normal)]
@@ -19,7 +19,7 @@ namespace WhoIsTalking.Patches
                 }
                 else
                 {
-                    __instance.AddComponent<NameTagHandler>();
+                    __instance.AddComponent<NameTagHandler>().GetInfo();
                 }
             }
         }

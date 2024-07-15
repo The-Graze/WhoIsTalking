@@ -1,13 +1,16 @@
 ﻿using BepInEx;
-using UnityEngine;
-using UnityEngine.UI;
-using WhoIsTalking.Patches;
+using HarmonyLib;
+using System.Reflection;
 
 namespace WhoIsTalking
 {
-    [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
+    [BepInPlugin("Graze.WhoIsTalking", "Who Is Talking", "4.30")]
     public class Plugin : BaseUnityPlugin
     {
-        Plugin() => HarmonyP.ApplyPatches();
+        Plugin()
+        {
+            Harmony instance = new Harmony("Graze.WhoIsTalking");
+            instance.PatchAll(Assembly.GetExecutingAssembly());
+        }
     }
 }
