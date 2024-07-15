@@ -98,12 +98,9 @@ namespace WhoIsTalking
             switch (rig.setMatIndex)
             {
                 default:
-                    return new Color(
-                        rig.materialsToChangeTo[rig.tempMatIndex].color.r,
-                        rig.materialsToChangeTo[rig.tempMatIndex].color.g,
-                        rig.materialsToChangeTo[rig.tempMatIndex].color.b,
-                        1
-                    );
+                    return rig.playerColor;
+                case 1:
+                    return Color.red;
                 case 2:
                 case 11:
                     return Orange;
