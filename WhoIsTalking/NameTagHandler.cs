@@ -121,7 +121,7 @@ namespace WhoIsTalking
 
         Color ColourHandling()
         {
-            switch (rig.currentMatIndex)
+            switch (rig.setMatIndex)    
             {
                 default:
                     return rig.playerColor;
