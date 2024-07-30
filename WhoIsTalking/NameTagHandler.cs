@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using Photon.Realtime;
 using Photon.Voice.PUN;
+using Cinemachine;
 
 namespace WhoIsTalking
 {
@@ -40,8 +41,26 @@ namespace WhoIsTalking
             TPRend.material.shader = AssetRef.shader;
             TPText = TPRend.GetComponent<TextMesh>();
             TPSpeakerRend.gameObject.AddComponent<Spinner>().Speed = 1f;
+            try
+            {
+                Camera attemptCam1 = FindObjectOfType<CinemachineBrain>().GetComponent<Camera>();
+                if (attemptCam1 != null)
+                {
+                    ThirdPCam = attemptCam1;
+                }
+                else
+                {
+                    Camera attemptCam2 = FindObjectOfType<CinemachineBrain>().GetComponent<Camera>();
+                    if (attemptCam2)
+                    {
+                        ThirdPCam = attemptCam2;
+                    }
+                }
+            }
+            catch
+            {
 
-            ThirdPCam = GorillaTagger.Instance.thirdPersonCamera.transform.GetChild(0).GetComponent<Camera>();
+            }
         }
 
         void SetUpNameTagInstance(ref GameObject nameTag, string name, string layerName)
@@ -73,7 +92,14 @@ namespace WhoIsTalking
 
                 TPSpeakerRend.material.color = ColourHandling();
                 TPRend.material.color = ColourHandling();
-                TPRend.transform.LookAt(ThirdPCam.transform.position);
+                if (ThirdPCam != null)
+                {
+                    TPRend.transform.LookAt(ThirdPCam.transform.position);
+                }
+                else
+                {
+                    TPRend.transform.LookAt(Camera.main.transform.position);
+                }
                 TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
                 TPText.text = player.NickName;
                 FPText.text = player.NickName;
@@ -95,7 +121,7 @@ namespace WhoIsTalking
 
         Color ColourHandling()
         {
-            switch (rig.setMatIndex)
+            switch (rig.currentMatIndex)
             {
                 default:
                     return rig.playerColor;
