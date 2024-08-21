@@ -6,8 +6,8 @@ using WhoIsTalking.Patches;
 namespace WhoIsTalking
 {
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
-    public class Plugin : BaseUnityPlugin
+    public class Mod : BaseUnityPlugin
     {
-        Plugin() => HarmonyP.ApplyPatches();
+        Mod() => HarmonyP.ApplyPatches();
     }
 }
