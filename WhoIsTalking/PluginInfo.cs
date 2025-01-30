@@ -2,8 +2,8 @@
 {
     internal class PluginInfo
     {
-        public const string GUID = "com.graze.gorillatag.whoistalking";
+        public const string GUID = "Graze.WhoIsTalking";
         public const string Name = "WhoIsTalking";
-        public const string Version = "4.2.0.4";
+        public const string Version = "4.2.0.5";
     }
 }

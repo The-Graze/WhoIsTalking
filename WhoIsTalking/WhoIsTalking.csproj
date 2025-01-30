@@ -25,11 +25,11 @@
 		<Reference Include="0Harmony">
 			<HintPath>$(BepInExAssemblyPath)\0Harmony.dll</HintPath>
 		</Reference>
+		<Reference Include="Assembly-CSharp" Publicize="true">
+		  <HintPath>$(GameAssemblyPath)\Assembly-CSharp.dll</HintPath>
+		</Reference>
 		<Reference Include="Assembly-CSharp-firstpass">
 			<HintPath>$(GameAssemblyPath)\Assembly-CSharp-firstpass.dll</HintPath>
-		</Reference>
-		<Reference Include="Assembly-CSharp">
-		  <HintPath>..\..\..\..\..\..\Program Files\Oculus\Software\Software\another-axiom-gorilla-tag\Assembly-CSharp-publicized.dll</HintPath>
 		</Reference>
 		<Reference Include="BakeryRuntimeAssembly">
 			<HintPath>$(GameAssemblyPath)\BakeryRuntimeAssembly.dll</HintPath>
@@ -292,5 +292,12 @@
 		<Reference Include="websocket-sharp">
 			<HintPath>$(GameAssemblyPath)\websocket-sharp.dll</HintPath>
 		</Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.2">
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	    <PrivateAssets>all</PrivateAssets>
+	  </PackageReference>
 	</ItemGroup>
 </Project>

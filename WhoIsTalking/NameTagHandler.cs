@@ -100,7 +100,15 @@ namespace WhoIsTalking
                 {
                     TPRend.transform.LookAt(Camera.main.transform.position);
                 }
-                TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
+
+                if (Mod.Speaker.Value == true)
+                {
+                    TPSpeakerRend.forceRenderingOff = !voice.IsSpeaking;
+                }
+                else
+                {
+                    TPSpeakerRend.forceRenderingOff = true;
+                }
                 TPText.text = player.NickName;
                 FPText.text = player.NickName;
             }
@@ -115,7 +123,14 @@ namespace WhoIsTalking
             float Distance = Vector3.Distance(transform.position, Camera.main.transform.position);
             float viewDistance = 4f;
             bool CanSee = (bool)(Distance <= viewDistance);
-            FPSpeakerRend.forceRenderingOff = !voice.IsSpeaking || !CanSee;
+            if (Mod.Speaker.Value == true)
+            {
+                FPSpeakerRend.forceRenderingOff = !voice.IsSpeaking || !CanSee;
+            }
+            else
+            {
+                FPSpeakerRend.forceRenderingOff = true;
+            }
             FPRend.forceRenderingOff = !CanSee;
         }
 
