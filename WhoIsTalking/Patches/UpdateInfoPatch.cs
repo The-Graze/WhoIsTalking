@@ -6,7 +6,7 @@ using HarmonyLib;
 namespace WhoIsTalking.Patches
 {
     [HarmonyPatch(typeof(VRRig))]
-    [HarmonyPatch("UpdateName", MethodType.Normal)]
+    [HarmonyPatch("SetColor", MethodType.Normal)]
     internal class UpdateInfoPatch
     {
         private static void Postfix(VRRig __instance)
