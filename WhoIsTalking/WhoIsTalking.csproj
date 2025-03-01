@@ -5,22 +5,12 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 	  <Optimize>True</Optimize>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <Optimize>False</Optimize>
-	</PropertyGroup>
-
-	<ItemGroup>
-	  <None Remove="Assets\speaker" />
-	</ItemGroup>
-
 	<ItemGroup>
 	  <EmbeddedResource Include="Assets\speaker" />
 	</ItemGroup>
-
 	<ItemGroup>
 		<Reference Include="0Harmony">
 			<HintPath>$(BepInExAssemblyPath)\0Harmony.dll</HintPath>
@@ -285,9 +275,6 @@
 		</Reference>
 		<Reference Include="UnityEngine.XRModule">
 			<HintPath>$(GameAssemblyPath)\UnityEngine.XRModule.dll</HintPath>
-		</Reference>
-		<Reference Include="Utilla">
-		  <HintPath>..\..\..\..\..\..\Program Files\Oculus\Software\Software\another-axiom-gorilla-tag\BepInEx\plugins\Utilla\Utilla.dll</HintPath>
 		</Reference>
 		<Reference Include="websocket-sharp">
 			<HintPath>$(GameAssemblyPath)\websocket-sharp.dll</HintPath>
