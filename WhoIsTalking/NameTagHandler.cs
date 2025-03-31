@@ -5,7 +5,7 @@ using Cinemachine;
 
 namespace WhoIsTalking
 {
-    class NameTagHandler : MonoBehaviour
+    public class NameTagHandler : MonoBehaviour
     {
         GameObject NameFP, NameTP;
         Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
