@@ -12,7 +12,7 @@ namespace WhoIsTalking
         TextMesh FPText, TPText;
         Camera ThirdPCam;
 
-        VRRig rig;
+        public VRRig rig;
         NetPlayer player;
         PhotonVoiceView voice;
 
