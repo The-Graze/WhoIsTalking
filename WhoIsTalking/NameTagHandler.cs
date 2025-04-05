@@ -5,14 +5,14 @@ using Cinemachine;
 
 namespace WhoIsTalking
 {
-    class NameTagHandler : MonoBehaviour
+    public class NameTagHandler : MonoBehaviour
     {
         GameObject NameFP, NameTP;
         Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
         TextMesh FPText, TPText;
         Camera ThirdPCam;
 
-        VRRig rig;
+        public VRRig rig;
         NetPlayer player;
         PhotonVoiceView voice;
 
@@ -26,7 +26,7 @@ namespace WhoIsTalking
         }
         void SetUpNameTag()
         {
-            SetUpNameTagInstance(ref NameFP, "First Person NameTag", "GorillaCosmeticParticle");
+            SetUpNameTagInstance(ref NameFP, "First Person NameTag", "FirstPersonOnly");
             FPSpeakerRend = NameFP.transform.GetChild(0).GetComponent<Renderer>();
             FPSpeakerRend.material.shader = AssetRef.shader;
             FPRend = NameFP.transform.GetChild(1).GetComponent<Renderer>();
@@ -34,7 +34,7 @@ namespace WhoIsTalking
             FPText = FPRend.GetComponent<TextMesh>();
             FPSpeakerRend.gameObject.AddComponent<Spinner>().Speed = 1f;
 
-            SetUpNameTagInstance(ref NameTP, "Third Person NameTag", "Gorilla Spectator");
+            SetUpNameTagInstance(ref NameTP, "Third Person NameTag", "MirrorOnly");
             TPSpeakerRend = NameTP.transform.GetChild(0).GetComponent<Renderer>();
             TPSpeakerRend.material.shader = AssetRef.shader;
             TPRend = NameTP.transform.GetChild(1).GetComponent<Renderer>();

@@ -11,16 +11,10 @@ namespace WhoIsTalking.Patches
     {
         private static void Postfix(VRRig __instance)
         {
-            if (!__instance.isOfflineVRRig)
+            if (!__instance.isLocal)
             {
-                if (__instance.GetComponent<NameTagHandler>())
-                {
-                    __instance.GetComponent<NameTagHandler>().GetInfo();
-                }
-                else
-                {
-                    __instance.AddComponent<NameTagHandler>();
-                }
+                __instance.GetOrAddComponent<NameTagHandler>(out var nth);
+                nth.GetInfo();
             }
         }
     }
