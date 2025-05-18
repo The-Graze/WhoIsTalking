@@ -1,7 +1,7 @@
 This mod was modified by EddyTheAnimator on github!!!
 
 Includes:
-More configuration files.
+More configuration possibility.
 More functions.
 
 Nothing much different from the original.
