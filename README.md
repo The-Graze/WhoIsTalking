@@ -7,7 +7,7 @@ More functions.
 
 Nothing much different from the original.
 
-#📥 Installation
+# Installation
 Drop WhoIsTalking.dll into GorillaTag/BepInEx/plugins/
 
 Run Gorilla Tag once to generate/update WhoIsTalking.cfg
