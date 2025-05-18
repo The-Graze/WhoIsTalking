@@ -1,3 +1,11 @@
+This mod was modified by EddyTheAnimator on github!!!
+
+Includes:
+More configuration files.
+More functions.
+
+Nothing much different from the original.
+
 # WhoIsTalking
 
 
