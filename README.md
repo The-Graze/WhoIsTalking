@@ -1,3 +1,4 @@
+# Modification
 This mod was modified by EddyTheAnimator on github!!!
 
 Includes:
@@ -5,6 +6,13 @@ More configuration possibility.
 More functions.
 
 Nothing much different from the original.
+
+#📥 Installation
+Drop WhoIsTalking.dll into GorillaTag/BepInEx/plugins/
+
+Run Gorilla Tag once to generate/update WhoIsTalking.cfg
+
+Tweak settings in %GAMEDIR%/BepInEx/config/WhoIsTalking.cfg and enjoy!
 
 # WhoIsTalking
 
