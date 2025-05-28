@@ -1,5 +1,5 @@
 # Credits
-This mod was modified by EddyTheAnimator. The-Graze is the original creator.
+This mod was modified by EddyTheAnimator1. The-Graze is the original creator.
 
 Includes:
 More configuration possibility.
