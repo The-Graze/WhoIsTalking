@@ -1,8 +1,9 @@
-﻿using System;                     // for Math
+﻿using System;                               // for Math
 using UnityEngine;
 using Photon.Realtime;
+using Photon.Pun;
 using Photon.Voice.PUN;
-using Photon.Voice.Unity;         // Recorder.LevelMeter
+using Photon.Voice.Unity;                   // Recorder.LevelMeter
 using Cinemachine;
 
 namespace WhoIsTalking
@@ -27,10 +28,17 @@ namespace WhoIsTalking
         readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
         static readonly float[] audioSamples = new float[256];    // reused buffer
 
+        /* -------- proximity-voice -------- */
+        AudioSource speakerSrc;
+        float baseVolume = 1f;
+        int lastViewID = -1;
+
         void Start()
         {
             if (NameFP == null && NameTP == null)
                 SetUpNameTag();
+
+            GetInfo();                               // cache refs on first spawn
         }
 
         void SetUpNameTag()
@@ -80,10 +88,58 @@ namespace WhoIsTalking
             rig = GetComponent<VRRig>();
             player = rig?.OwningNetPlayer;
             voice = VRRigCache.rigsInUse[rig.OwningNetPlayer].voiceView;
+
+            RefreshSpeakerRef();
         }
+
+        /*──────────────────────────────────────────────────────────*/
+        void RefreshSpeakerRef()
+        {
+            /*───────────────────────── primary (Photon Voice) ─────────────────────────*/
+            if (voice?.SpeakerInUse != null)
+            {
+                PhotonView pv = voice.SpeakerInUse.GetComponent<PhotonView>();
+                AudioSource src = voice.SpeakerInUse.GetComponent<AudioSource>();
+
+                if (src != null)
+                {
+                    int id = (pv != null) ? pv.ViewID : -1;   // –1 when no PhotonView
+
+                    if (speakerSrc != src)        // swapped lobby or first run
+                    {
+                        speakerSrc = src;
+                        baseVolume = speakerSrc.volume;
+                        lastViewID = id;
+                    }
+
+                    return;   // all good – nothing else to do
+                }
+            }
+
+            /*───────────────────────── fallback (manual hierarchy) ────────────────────*/
+            // rig → body/head/SpeakerHeadCollider/HeadSpeaker
+            Transform t = transform.Find(
+                "body/head/SpeakerHeadCollider/HeadSpeaker");
+
+            if (t == null) return;
+
+            AudioSource manualSrc = t.GetComponent<AudioSource>();
+            if (manualSrc == null) return;
+
+            // only update if we *changed* speaker
+            if (speakerSrc != manualSrc)
+            {
+                speakerSrc = manualSrc;
+                baseVolume = speakerSrc.volume;
+                lastViewID = -1;
+            }
+        }
+
 
         void FixedUpdate()
         {
+            RefreshSpeakerRef();                       // keep refs valid
+
             try
             {
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
@@ -105,6 +161,7 @@ namespace WhoIsTalking
                 FadeRenderer(TPRend, showTPTag, baseCol, fadeSpeed);
                 FadeRenderer(TPSpeakerRend, showTPIcon, baseCol, fadeSpeed);
 
+                /*──── mic-pulse ────*/
                 if (Mod.MicPulse.Value)
                     ApplyMicPulse();
                 else
@@ -113,6 +170,22 @@ namespace WhoIsTalking
                     TPSpeakerRend.transform.localScale = speakerBaseScale;
                 }
 
+                /*──── proximity voice ────*/
+                if (speakerSrc != null)
+                {
+                    float targetVol;
+                    if (Mod.ProximityVoiceChat.Value && !player.IsLocal)
+                        targetVol = (dist <= Mod.ViewDistance.Value) ? baseVolume : 0f;
+                    else
+                        targetVol = baseVolume;
+
+                    speakerSrc.volume = Mathf.MoveTowards(
+                        speakerSrc.volume,
+                        targetVol,
+                        fadeSpeed * Time.deltaTime);
+                }
+
+                /*──── billboard & text ────*/
                 FPRend.transform.LookAt(Camera.main.transform.position);
                 TPRend.transform.LookAt((ThirdPCam != null)
                                         ? ThirdPCam.transform.position
@@ -122,7 +195,7 @@ namespace WhoIsTalking
             }
             catch
             {
-                GetInfo();
+                GetInfo();          // regain refs if something went null
             }
         }
 
@@ -180,6 +253,12 @@ namespace WhoIsTalking
                 return Color.green;
             else
                 return rig.playerColor;
+        }
+
+        void OnDisable()
+        {
+            if (speakerSrc != null)
+                speakerSrc.volume = baseVolume;   // leave source untouched for other mods
         }
     }
 }

@@ -24,8 +24,11 @@ namespace WhoIsTalking
         public static ConfigEntry<float> MicPulseMaxScale;
         public static ConfigEntry<float> MicPulseSensitivity;
 
+        /* NEW ─────────────────────────────────────────────────────*/
+        public static ConfigEntry<bool> ProximityVoiceChat;
+
         /*───────────────────────────────────────────────────────────*/
-        Mod()
+        public Mod()
         {
             HarmonyP.ApplyPatches();
 
@@ -47,7 +50,7 @@ namespace WhoIsTalking
             FadeTime = Config.Bind("Settings", "Fade Duration", 0.25f,
                 "Seconds taken for tags/icons to fade in or out. Set to 0 for instant.");
 
-            /*──────────────── Mic-pulse settings ──────────────────*/
+            /*──────────────── Mic-pulse settings ───────────────────*/
             MicPulse = Config.Bind("Mic-Pulse", "Enable Mic Pulse", true,
                 "If true, the speaker icon scales with the player's voice loudness.");
 
@@ -60,6 +63,12 @@ namespace WhoIsTalking
             MicPulseSensitivity = Config.Bind("Mic-Pulse", "Sensitivity", 7f,
                 "Multiplier applied to Photon Voice amplitude before mapping to scale.\n" +
                 "Raise this if the pulse feels too weak, lower if it spikes too easily.");
+
+            /*──────────────── Proximity-voice setting ──────────────*/
+            ProximityVoiceChat = Config.Bind("Settings", "Proximity Voice Chat", false,
+                "If enabled, remote players’ voices fade in when they’re within the\n" +
+                "“First-Person Tag Distance” and fade out when they leave it.\n" +
+                "Fade speed uses the same “Fade Duration” setting.");
         }
     }
 }
