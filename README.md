@@ -1,3 +1,19 @@
+# Credits
+This mod was modified by EddyTheAnimator1. The-Graze is the original creator.
+
+Includes:
+More configuration possibility.
+More functions.
+
+Nothing much different from the original.
+
+# Installation
+Drop WhoIsTalking.dll into GorillaTag/BepInEx/plugins/
+
+Run Gorilla Tag once to generate/update WhoIsTalking.cfg
+
+Tweak settings in %GAMEDIR%/BepInEx/config/WhoIsTalking.cfg and enjoy!
+
 # WhoIsTalking
 
 
