@@ -10,6 +10,8 @@ EddyTheAnimator1 additons:
 More configuration possibility.
 More functions.
 
+Thank you so much to them, I had Broken My VR and remeberd about the changes to the mod they made and could add it to still have a mod update when I was down
+
 # Installation
 Drop WhoIsTalking.dll into GorillaTag/BepInEx/plugins/
 
