@@ -7,4 +7,3 @@
         public const string Version = "5.0.0";
     }
 }
-]

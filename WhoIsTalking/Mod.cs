@@ -47,7 +47,7 @@ namespace WhoIsTalking
             SpinnerSpeed = Config.Bind("Settings", "Speaker Icon Spin Speed", 0.7f,
                 "Rotation speed of the speaker icon (revolutions per second).");
 
-            FadeTime = Config.Bind("Settings", "Fade Duration", 0.25f,
+            FadeTime = Config.Bind("Settings", "Fade Duration", 0.30f,
                 "Seconds taken for tags/icons to fade in or out. Set to 0 for instant.");
 
             /*──────────────── Mic-pulse settings ───────────────────*/
