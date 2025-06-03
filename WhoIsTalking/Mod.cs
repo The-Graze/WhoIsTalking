@@ -36,7 +36,7 @@ namespace WhoIsTalking
                 "Display the animated microphone icon while a player is speaking.");
 
             ViewDistance = Config.Bind("Settings", "First-Person Tag Distance", 5f,
-                "Maximum distance (metres) the first-person name-tag is rendered.");
+                "Maximum distance (metres) the first-person name-tag is rendered. (clammed to 10 to stop advatage gain)");
 
             ShowFirstPersonTag = Config.Bind("Settings", "Show First-Person Name-Tag", true,
                 "Master toggle for the name-tag rendered in the player camera.");
