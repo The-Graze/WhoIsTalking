@@ -5,6 +5,7 @@ using Photon.Pun;
 using Photon.Voice.PUN;
 using Photon.Voice.Unity;                   // Recorder.LevelMeter
 using Cinemachine;
+using GorillaExtensions;
 
 namespace WhoIsTalking
 {
@@ -147,7 +148,7 @@ namespace WhoIsTalking
                 Color baseCol = ColourHandling();
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
-                bool canSeeFP = dist <= Mod.ViewDistance.Value;
+                bool canSeeFP = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
                 bool showFPTag = Mod.ShowFirstPersonTag.Value && canSeeFP;
                 bool showTPTag = Mod.ShowThirdPersonTag.Value;
                 bool speaking = Mod.Speaker.Value && voice.IsSpeaking;

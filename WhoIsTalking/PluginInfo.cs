@@ -2,8 +2,9 @@
 {
     internal class PluginInfo
     {
-        public const string GUID = "Graze.WhoIsTalking";
+        public const string GUID = "Graze.WhoIsTalking.";
         public const string Name = "WhoIsTalking";
-        public const string Version = "4.2.3";
+        public const string Version = "5.0.0";
     }
 }
+]
