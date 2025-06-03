@@ -176,7 +176,7 @@ namespace WhoIsTalking
                 {
                     float targetVol;
                     if (Mod.ProximityVoiceChat.Value && !player.IsLocal)
-                        targetVol = (dist <= Mod.ViewDistance.Value) ? baseVolume : 0f;
+                        targetVol = (dist <= Mod.ViewDistance.Value.ClampSafe(0,10)) ? baseVolume : 0f;
                     else
                         targetVol = baseVolume;
 
