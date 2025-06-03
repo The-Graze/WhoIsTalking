@@ -1,11 +1,14 @@
 # Credits
-This mod was modified by EddyTheAnimator1. The-Graze is the original creator.
+The-Graze, EddyTheAnimator1. 
 
-Includes:
+The-Graze:
+
+Base Mod, Orignal stuff
+
+EddyTheAnimator1 additons:
+
 More configuration possibility.
 More functions.
-
-Nothing much different from the original.
 
 # Installation
 Drop WhoIsTalking.dll into GorillaTag/BepInEx/plugins/
