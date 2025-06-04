@@ -17,6 +17,7 @@ namespace WhoIsTalking
         public static ConfigEntry<bool> ShowThirdPersonTag;
         public static ConfigEntry<float> SpinnerSpeed;
         public static ConfigEntry<float> FadeTime;
+        public static ConfigEntry<float> ColourChangeTime;
 
         // live mic-pulse controls
         public static ConfigEntry<bool> MicPulse;
@@ -49,6 +50,9 @@ namespace WhoIsTalking
 
             FadeTime = Config.Bind("Settings", "Fade Duration", 0.30f,
                 "Seconds taken for tags/icons to fade in or out. Set to 0 for instant.");
+
+            ColourChangeTime = Config.Bind("Settings", "Colour Transition Duration", 1f,
+                "Seconds taken for the name-tag colour to adjust when it changes. Set to 0 for instant.");
 
             /*──────────────── Mic-pulse settings ───────────────────*/
             MicPulse = Config.Bind("Mic-Pulse", "Enable Mic Pulse", true,

@@ -19,6 +19,7 @@ namespace WhoIsTalking
 
         Spinner FPSpeakerSpin, TPSpeakerSpin;
         Vector3 speakerBaseScale;               // original prefab scale
+        Color currentColour;
 
         /* -------- Photon refs -------- */
         public VRRig rig;
@@ -40,6 +41,8 @@ namespace WhoIsTalking
                 SetUpNameTag();
 
             GetInfo();                               // cache refs on first spawn
+
+            currentColour = ColourHandling();
         }
 
         void SetUpNameTag()
@@ -145,7 +148,10 @@ namespace WhoIsTalking
             {
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
-                Color baseCol = ColourHandling();
+                Color targetCol = ColourHandling();
+                float colourSpeed = (Mod.ColourChangeTime.Value > 0f) ?
+                                      Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
+                currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
                 bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
@@ -157,10 +163,10 @@ namespace WhoIsTalking
                 bool showTPIcon = showTPTag && speaking;
 
                 float fadeSpeed = (Mod.FadeTime.Value > 0f) ? 1f / Mod.FadeTime.Value : 1000f;
-                FadeRenderer(FPRend, showFPTag, baseCol, fadeSpeed);
-                FadeRenderer(FPSpeakerRend, showFPIcon, baseCol, fadeSpeed);
-                FadeRenderer(TPRend, showTPTag, baseCol, fadeSpeed);
-                FadeRenderer(TPSpeakerRend, showTPIcon, baseCol, fadeSpeed);
+                FadeRenderer(FPRend, showFPTag, currentColour, fadeSpeed);
+                FadeRenderer(FPSpeakerRend, showFPIcon, currentColour, fadeSpeed);
+                FadeRenderer(TPRend, showTPTag, currentColour, fadeSpeed);
+                FadeRenderer(TPSpeakerRend, showTPIcon, currentColour, fadeSpeed);
 
                 /*──── mic-pulse ────*/
                 if (Mod.MicPulse.Value)
