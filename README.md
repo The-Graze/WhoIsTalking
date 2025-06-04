@@ -44,7 +44,7 @@ value.
 - **Max Scale** (`1.45`): scale multiplier at maximum loudness.
 - **Sensitivity** (`7`): multiplier applied to Photon Voice amplitude before
   mapping to scale.
-- **Colour Transition Duration** (`0.25`): seconds taken for the name-tag colour
+- **Colour Transition Duration** (`1`): seconds taken for the name-tag colour
   to adjust when it changes. Set to `0` for instant changes.
 - **Proximity Voice Chat** (`false`): fade remote voices in and out based on
   the "First-Person Tag Distance" setting using the same fade duration.
