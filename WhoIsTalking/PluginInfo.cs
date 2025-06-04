@@ -4,6 +4,6 @@
     {
         public const string GUID = "Graze.WhoIsTalking";
         public const string Name = "WhoIsTalking";
-        public const string Version = "5.0.0";
+        public const string Version = "5.0.1";
     }
 }
