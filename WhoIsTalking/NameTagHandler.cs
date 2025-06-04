@@ -148,9 +148,9 @@ namespace WhoIsTalking
                 Color baseCol = ColourHandling();
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
-                bool canSeeFP = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
-                bool showFPTag = Mod.ShowFirstPersonTag.Value && canSeeFP;
-                bool showTPTag = Mod.ShowThirdPersonTag.Value;
+                bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
+                bool showFPTag = Mod.ShowFirstPersonTag.Value && withinRange;
+                bool showTPTag = Mod.ShowThirdPersonTag.Value && withinRange;
                 bool speaking = Mod.Speaker.Value && voice.IsSpeaking;
 
                 bool showFPIcon = showFPTag && speaking;
