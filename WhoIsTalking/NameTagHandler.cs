@@ -27,6 +27,7 @@ namespace WhoIsTalking
 
         /* -------- helpers -------- */
         readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
+        private Color baseCol = Color.black;
         static readonly float[] audioSamples = new float[256];    // reused buffer
 
         /* -------- proximity-voice -------- */
@@ -39,7 +40,7 @@ namespace WhoIsTalking
             if (NameFP == null && NameTP == null)
                 SetUpNameTag();
 
-            GetInfo();                               // cache refs on first spawn
+            RefreshInfo(baseCol);                               // cache refs on first spawn
         }
 
         void SetUpNameTag()
@@ -84,12 +85,12 @@ namespace WhoIsTalking
             tag.name = name;
         }
 
-        public void GetInfo()
+        public void RefreshInfo(Color c)
         {
             rig = GetComponent<VRRig>();
             player = rig?.OwningNetPlayer;
             voice = VRRigCache.rigsInUse[rig.OwningNetPlayer].voiceView;
-
+            baseCol = c;
             RefreshSpeakerRef();
         }
 
@@ -145,7 +146,7 @@ namespace WhoIsTalking
             {
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
-                Color baseCol = ColourHandling();
+                baseCol = ColourHandling();
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
                 bool canSeeFP = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
@@ -196,7 +197,7 @@ namespace WhoIsTalking
             }
             catch
             {
-                GetInfo();          // regain refs if something went null
+                RefreshInfo(baseCol);          // regain refs if something went null
             }
         }
 
@@ -253,7 +254,7 @@ namespace WhoIsTalking
             else if (idx == 12)
                 return Color.green;
             else
-                return rig.playerColor;
+                return baseCol;
         }
 
         void OnDisable()
