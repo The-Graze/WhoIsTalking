@@ -19,6 +19,7 @@ namespace WhoIsTalking
 
         Spinner FPSpeakerSpin, TPSpeakerSpin;
         Vector3 speakerBaseScale;               // original prefab scale
+        Color currentColour;
 
         /* -------- Photon refs -------- */
         public VRRig rig;
@@ -40,6 +41,9 @@ namespace WhoIsTalking
             if (NameFP == null && NameTP == null)
                 SetUpNameTag();
 
+            GetInfo();                               // cache refs on first spawn
+
+            currentColour = ColourHandling();
             RefreshInfo(baseCol);                               // cache refs on first spawn
         }
 
@@ -146,22 +150,28 @@ namespace WhoIsTalking
             {
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
+
+                Color targetCol = ColourHandling();
+                float colourSpeed = (Mod.ColourChangeTime.Value > 0f) ?
+                                      Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
+                currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
                 baseCol = ColourHandling();
 
+
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
-                bool canSeeFP = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
-                bool showFPTag = Mod.ShowFirstPersonTag.Value && canSeeFP;
-                bool showTPTag = Mod.ShowThirdPersonTag.Value;
+                bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
+                bool showFPTag = Mod.ShowFirstPersonTag.Value && withinRange;
+                bool showTPTag = Mod.ShowThirdPersonTag.Value && withinRange;
                 bool speaking = Mod.Speaker.Value && voice.IsSpeaking;
 
                 bool showFPIcon = showFPTag && speaking;
                 bool showTPIcon = showTPTag && speaking;
 
                 float fadeSpeed = (Mod.FadeTime.Value > 0f) ? 1f / Mod.FadeTime.Value : 1000f;
-                FadeRenderer(FPRend, showFPTag, baseCol, fadeSpeed);
-                FadeRenderer(FPSpeakerRend, showFPIcon, baseCol, fadeSpeed);
-                FadeRenderer(TPRend, showTPTag, baseCol, fadeSpeed);
-                FadeRenderer(TPSpeakerRend, showTPIcon, baseCol, fadeSpeed);
+                FadeRenderer(FPRend, showFPTag, currentColour, fadeSpeed);
+                FadeRenderer(FPSpeakerRend, showFPIcon, currentColour, fadeSpeed);
+                FadeRenderer(TPRend, showTPTag, currentColour, fadeSpeed);
+                FadeRenderer(TPSpeakerRend, showTPIcon, currentColour, fadeSpeed);
 
                 /*──── mic-pulse ────*/
                 if (Mod.MicPulse.Value)
