@@ -1,7 +1,3 @@
-![Quick demo of the feature](https://i.imgur.com/VD972OI.gif)
-
-
-
 # Credits
 The-Graze, [EddyTheAnimator1](https://github.com/EddyTheAnimator1). 
 
