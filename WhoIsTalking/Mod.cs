@@ -51,7 +51,7 @@ namespace WhoIsTalking
             FadeTime = Config.Bind("Settings", "Fade Duration", 0.30f,
                 "Seconds taken for tags/icons to fade in or out. Set to 0 for instant.");
 
-            ColourChangeTime = Config.Bind("Settings", "Colour Transition Duration", 1f,
+            ColourChangeTime = Config.Bind("Settings", "Colour Transition Duration", 2.5f,
                 "Seconds taken for the name-tag colour to adjust when it changes. Set to 0 for instant.");
 
             /*──────────────── Mic-pulse settings ───────────────────*/

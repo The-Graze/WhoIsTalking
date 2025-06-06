@@ -151,11 +151,11 @@ namespace WhoIsTalking
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
 
-                Color targetCol = baseCol;
+                Color targetCol = ColourHandling();
                 float colourSpeed = (Mod.ColourChangeTime.Value > 0f) ?
                                       Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
                 currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
-                baseCol = ColourHandling();
+
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
                 bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
