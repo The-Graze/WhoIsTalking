@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using HarmonyLib;
+using UnityEngine;
 
 namespace WhoIsTalking.Patches
 {
@@ -9,12 +10,12 @@ namespace WhoIsTalking.Patches
     [HarmonyPatch("SetColor", MethodType.Normal)]
     internal class UpdateInfoPatch
     {
-        private static void Postfix(VRRig __instance)
+        private static void Postfix(VRRig __instance, Color color)
         {
             if (!__instance.isLocal)
             {
                 __instance.GetOrAddComponent<NameTagHandler>(out var nth);
-                nth.GetInfo();
+                nth.RefreshInfo(color);
             }
         }
     }
