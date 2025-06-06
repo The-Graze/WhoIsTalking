@@ -41,7 +41,7 @@ namespace WhoIsTalking
             if (NameFP == null && NameTP == null)
                 SetUpNameTag();
 
-            GetInfo();                               // cache refs on first spawn
+            RefreshInfo(baseCol);                               // cache refs on first spawn
 
             currentColour = ColourHandling();
             RefreshInfo(baseCol);                               // cache refs on first spawn
@@ -151,12 +151,11 @@ namespace WhoIsTalking
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
 
-                Color targetCol = ColourHandling();
+                Color targetCol = baseCol;
                 float colourSpeed = (Mod.ColourChangeTime.Value > 0f) ?
                                       Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
                 currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
                 baseCol = ColourHandling();
-
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
                 bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
