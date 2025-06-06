@@ -1,5 +1,5 @@
 # Credits
-The-Graze, EddyTheAnimator1. 
+The-Graze, [EddyTheAnimator1](https://github.com/EddyTheAnimator1). 
 
 The-Graze:
 
