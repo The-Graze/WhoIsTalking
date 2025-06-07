@@ -12,6 +12,27 @@ More functions.
 
 Thank you so much to them, I had Broken My VR and remeberd about the changes to the mod they made and could add it to still have a mod update when I was down
 
+# Showcase
+
+
+Heya, Eduard here. A little showcase on what the mod can do!!
+
+
+**Dynamic name changes**
+
+The names smoothly changes color. No flicker! 
+![Gif](https://github.com/user-attachments/assets/074637af-f8ec-4570-8508-30a50d87fd12)
+
+Applies to people that get infected as well.
+
+**Don't like it**? *Change it!* Everything was made customizable to your preferences.
+![Image](https://github.com/user-attachments/assets/0886bde2-93d0-4f58-b2fb-966d7e6b5ebe)
+
+**Scalable voice icon**
+
+Scales depending on the players tone! And, fades out when the player becomes silent!
+![Gif](https://github.com/user-attachments/assets/0a9406ed-d699-4814-8ce6-11bab0a06a99)
+
 # Installation
 Drop WhoIsTalking.dll into GorillaTag/BepInEx/plugins/
 
@@ -44,7 +65,7 @@ value.
 - **Max Scale** (`1.45`): scale multiplier at maximum loudness.
 - **Sensitivity** (`7`): multiplier applied to Photon Voice amplitude before
   mapping to scale.
-- **Colour Transition Duration** (`1`): seconds taken for the name-tag colour
+- **Colour Transition Duration** (`2.5`): seconds taken for the name-tag colour
   to adjust when it changes. Set to `0` for instant changes.
 - **Proximity Voice Chat** (`false`): fade remote voices in and out based on
   the "First-Person Tag Distance" setting using the same fade duration.
