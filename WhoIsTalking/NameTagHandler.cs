@@ -1,53 +1,126 @@
-﻿using System;                               // for Math
-using UnityEngine;
-using Photon.Realtime;
-using Photon.Pun;
-using Photon.Voice.PUN;
-using Photon.Voice.Unity;                   // Recorder.LevelMeter
+﻿using System;
 using Cinemachine;
 using GorillaExtensions;
-
+using JetBrains.Annotations;
+using Photon.Voice.PUN;
+using UnityEngine;
 namespace WhoIsTalking
 {
     public class NameTagHandler : MonoBehaviour
     {
-        /* -------- prefab parts -------- */
-        GameObject NameFP, NameTP;
-        Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
-        TextMesh FPText, TPText;
-        Camera ThirdPCam;
-
-        Spinner FPSpeakerSpin, TPSpeakerSpin;
-        Vector3 speakerBaseScale;               // original prefab scale
-        Color currentColour;
+        private static readonly float[] audioSamples = new float[256]; // reused buffer
 
         /* -------- Photon refs -------- */
         public VRRig rig;
-        NetPlayer player;
-        PhotonVoiceView voice;
 
         /* -------- helpers -------- */
-        readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
+        private readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
         private Color baseCol = Color.black;
-        static readonly float[] audioSamples = new float[256];    // reused buffer
+        private float baseVolume = 1f;
+        private Color currentColour;
+        private Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
+
+        private Spinner FPSpeakerSpin, TPSpeakerSpin;
+        private TextMesh FPText, TPText;
+        
+
+        /* -------- prefab parts -------- */
+        private GameObject NameFP, NameTP;
+        private NetPlayer player;
+        private Vector3 speakerBaseScale; // original prefab scale
 
         /* -------- proximity-voice -------- */
-        AudioSource speakerSrc;
-        float baseVolume = 1f;
-        int lastViewID = -1;
+        private AudioSource speakerSrc;
+        private Camera ThirdPCam;
+        private PhotonVoiceView voice;
 
-        void Start()
+        private void Start()
         {
             if (NameFP == null && NameTP == null)
                 SetUpNameTag();
 
-            RefreshInfo(baseCol);                               // cache refs on first spawn
+            RefreshInfo(baseCol); // cache refs on first spawn
 
             currentColour = ColourHandling();
-            RefreshInfo(baseCol);                               // cache refs on first spawn
+            RefreshInfo(baseCol); // cache refs on first spawn
         }
 
-        void SetUpNameTag()
+
+        private void FixedUpdate()
+        {
+            RefreshSpeakerRef(); // keep refs valid
+
+            try
+            {
+                FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
+
+
+                var targetCol = ColourHandling();
+                var colourSpeed = Mod.ColourChangeTime.Value > 0f ? Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
+                currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
+
+
+                var dist = Vector3.Distance(transform.position, GorillaTagger.Instance.mainCamera.transform.position);
+                var withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
+                var showFPTag = Mod.ShowFirstPersonTag.Value && withinRange && !CheckGhost();
+                var speaking = Mod.Speaker.Value && voice.IsSpeaking;
+
+                var showFPIcon = showFPTag && speaking;
+                var showTPIcon = speaking;
+
+                var fadeSpeed = Mod.FadeTime.Value > 0f ? 1f / Mod.FadeTime.Value : 1000f;
+                FadeRenderer(FPRend, showFPTag, currentColour, fadeSpeed);
+                FadeRenderer(FPSpeakerRend, showFPIcon, currentColour, fadeSpeed);
+                FadeRenderer(TPRend, true, currentColour, fadeSpeed);
+                FadeRenderer(TPSpeakerRend, showTPIcon, currentColour, fadeSpeed);
+
+                /*──── mic-pulse ────*/
+                if (Mod.MicPulse.Value)
+                {
+                    ApplyMicPulse();
+                }
+                else
+                {
+                    FPSpeakerRend.transform.localScale = speakerBaseScale;
+                    TPSpeakerRend.transform.localScale = speakerBaseScale;
+                }
+
+                /*──── proximity voice ────*/
+                if (speakerSrc)
+                {
+                    float targetVol;
+                    if (Mod.ProximityVoiceChat.Value && !player.IsLocal)
+                        targetVol = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10) ? baseVolume : 0f;
+                    else
+                        targetVol = baseVolume;
+
+                    speakerSrc.volume = Mathf.MoveTowards(
+                        speakerSrc.volume,
+                        targetVol,
+                        fadeSpeed * Time.deltaTime);
+                }
+
+                /*──── billboard & text ────*/
+                FPRend.transform.LookAt(GorillaTagger.Instance.mainCamera.transform.position);
+                TPRend.transform.LookAt(ThirdPCam
+                    ? ThirdPCam.transform.position
+                    : GorillaTagger.Instance.mainCamera.transform.position);
+
+                FPText.text = TPText.text = player.NickName;
+            }
+            catch
+            {
+                RefreshInfo(baseCol); // regain refs if something went null
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (speakerSrc != null)
+                speakerSrc.volume = baseVolume; // leave source untouched for other mods
+        }
+
+        private void SetUpNameTag()
         {
             /* first-person tag */
             SetUpNameTagInstance(ref NameFP, "First Person NameTag", "FirstPersonOnly");
@@ -73,157 +146,93 @@ namespace WhoIsTalking
 
             speakerBaseScale = FPSpeakerRend.transform.localScale;
 
-            try { ThirdPCam = FindObjectOfType<CinemachineBrain>()?.GetComponent<Camera>(); }
-            catch { }
+            try
+            {
+                ThirdPCam = FindObjectOfType<CinemachineBrain>()?.GetComponent<Camera>();
+            }
+            catch
+            {
+                // ignored as it would be a user fault for no that
+            }
         }
 
-        void SetUpNameTagInstance(ref GameObject tag, string name, string layerName)
+        private void SetUpNameTagInstance([NotNull] ref GameObject nameTag, string goName, string layerName)
         {
-            tag = Instantiate(AssetRef.Tag, transform);
-            tag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
+            if (nameTag != null)
+            {
+                nameTag = Instantiate(AssetRef.Tag, transform);
+                nameTag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
 
-            int layer = LayerMask.NameToLayer(layerName);
-            tag.layer = layer;
-            foreach (Transform t in tag.transform) t.gameObject.layer = layer;
+                var layer = LayerMask.NameToLayer(layerName);
+                nameTag.layer = layer;
+                foreach (Transform t in nameTag.transform) t.gameObject.layer = layer;
 
-            tag.name = name;
+                nameTag.name = goName;
+            }
         }
 
         public void RefreshInfo(Color c)
         {
             rig = GetComponent<VRRig>();
             player = rig?.OwningNetPlayer;
-            voice = VRRigCache.rigsInUse[rig.OwningNetPlayer].voiceView;
+            voice = VRRigCache.rigsInUse[rig!.OwningNetPlayer].voiceView;
             baseCol = c;
             RefreshSpeakerRef();
         }
 
         /*──────────────────────────────────────────────────────────*/
-        void RefreshSpeakerRef()
+        private void RefreshSpeakerRef()
         {
             /*───────────────────────── primary (Photon Voice) ─────────────────────────*/
             if (voice?.SpeakerInUse != null)
             {
-                PhotonView pv = voice.SpeakerInUse.GetComponent<PhotonView>();
-                AudioSource src = voice.SpeakerInUse.GetComponent<AudioSource>();
-
-                if (src != null)
+                var src = voice.SpeakerInUse.GetComponent<AudioSource>();
+                if (src)
                 {
-                    int id = (pv != null) ? pv.ViewID : -1;   // –1 when no PhotonView
-
-                    if (speakerSrc != src)        // swapped lobby or first run
+                    if (speakerSrc != src) // swapped lobby or first run
                     {
                         speakerSrc = src;
                         baseVolume = speakerSrc.volume;
-                        lastViewID = id;
                     }
 
-                    return;   // all good – nothing else to do
+                    return; // all good – nothing else to do
                 }
             }
 
             /*───────────────────────── fallback (manual hierarchy) ────────────────────*/
             // rig → body/head/SpeakerHeadCollider/HeadSpeaker
-            Transform t = transform.Find(
+            var t = transform.Find(
                 "body/head/SpeakerHeadCollider/HeadSpeaker");
 
-            if (t == null) return;
+            if (!t) return;
 
-            AudioSource manualSrc = t.GetComponent<AudioSource>();
-            if (manualSrc == null) return;
+            var manualSrc = t.GetComponent<AudioSource>();
+            if (!manualSrc) return;
 
             // only update if we *changed* speaker
             if (speakerSrc != manualSrc)
             {
                 speakerSrc = manualSrc;
                 baseVolume = speakerSrc.volume;
-                lastViewID = -1;
             }
         }
 
-
-        void FixedUpdate()
+        private void ApplyMicPulse()
         {
-            RefreshSpeakerRef();                       // keep refs valid
-
-            try
-            {
-                FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
-
-
-                Color targetCol = ColourHandling();
-                float colourSpeed = (Mod.ColourChangeTime.Value > 0f) ?
-                                      Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
-                currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
-
-
-                float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
-                bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
-                bool showFPTag = Mod.ShowFirstPersonTag.Value && withinRange;
-                bool showTPTag = Mod.ShowThirdPersonTag.Value && withinRange;
-                bool speaking = Mod.Speaker.Value && voice.IsSpeaking;
-
-                bool showFPIcon = showFPTag && speaking;
-                bool showTPIcon = showTPTag && speaking;
-
-                float fadeSpeed = (Mod.FadeTime.Value > 0f) ? 1f / Mod.FadeTime.Value : 1000f;
-                FadeRenderer(FPRend, showFPTag, currentColour, fadeSpeed);
-                FadeRenderer(FPSpeakerRend, showFPIcon, currentColour, fadeSpeed);
-                FadeRenderer(TPRend, showTPTag, currentColour, fadeSpeed);
-                FadeRenderer(TPSpeakerRend, showTPIcon, currentColour, fadeSpeed);
-
-                /*──── mic-pulse ────*/
-                if (Mod.MicPulse.Value)
-                    ApplyMicPulse();
-                else
-                {
-                    FPSpeakerRend.transform.localScale = speakerBaseScale;
-                    TPSpeakerRend.transform.localScale = speakerBaseScale;
-                }
-
-                /*──── proximity voice ────*/
-                if (speakerSrc != null)
-                {
-                    float targetVol;
-                    if (Mod.ProximityVoiceChat.Value && !player.IsLocal)
-                        targetVol = (dist <= Mod.ViewDistance.Value.ClampSafe(0,10)) ? baseVolume : 0f;
-                    else
-                        targetVol = baseVolume;
-
-                    speakerSrc.volume = Mathf.MoveTowards(
-                        speakerSrc.volume,
-                        targetVol,
-                        fadeSpeed * Time.deltaTime);
-                }
-
-                /*──── billboard & text ────*/
-                FPRend.transform.LookAt(Camera.main.transform.position);
-                TPRend.transform.LookAt((ThirdPCam != null)
-                                        ? ThirdPCam.transform.position
-                                        : Camera.main.transform.position);
-
-                FPText.text = TPText.text = player.NickName;
-            }
-            catch
-            {
-                RefreshInfo(baseCol);          // regain refs if something went null
-            }
-        }
-
-        void ApplyMicPulse()
-        {
-            float amp = 0f;
+            var amp = 0f;
 
             if (voice?.RecorderInUse?.LevelMeter != null)
+            {
                 amp = voice.RecorderInUse.LevelMeter.CurrentPeakAmp;
+            }
             else if (voice?.SpeakerInUse != null)
             {
-                AudioSource src = voice.SpeakerInUse.GetComponent<AudioSource>();
+                var src = voice.SpeakerInUse.GetComponent<AudioSource>();
                 if (src != null && src.isPlaying)
                 {
                     src.GetOutputData(audioSamples, 0);
                     double sum = 0;
-                    foreach (float s in audioSamples)
+                    foreach (var s in audioSamples)
                         sum += s * s;
                     amp = (float)Math.Sqrt(sum / audioSamples.Length);
                 }
@@ -231,45 +240,55 @@ namespace WhoIsTalking
 
             amp = Mathf.Clamp01(amp * Mod.MicPulseSensitivity.Value);
 
-            float scale = Mathf.Lerp(Mod.MicPulseMinScale.Value,
-                                     Mod.MicPulseMaxScale.Value,
-                                     amp);
+            var scale = Mathf.Lerp(Mod.MicPulseMinScale.Value,
+                Mod.MicPulseMaxScale.Value,
+                amp);
 
-            Vector3 scl = speakerBaseScale * scale;
+            var scl = speakerBaseScale * scale;
             FPSpeakerRend.transform.localScale = scl;
             TPSpeakerRend.transform.localScale = scl;
         }
 
-        void FadeRenderer(Renderer rend, bool visible, Color rgb, float speed)
+        private void FadeRenderer(Renderer rend, bool visible, Color rgb, float speed)
         {
-            Color c = rend.material.color;
-            float tgt = visible ? 1f : 0f;
-            float a = Mathf.MoveTowards(c.a, tgt, speed * Time.deltaTime);
+            var c = rend.material.color;
+            var tgt = visible ? 1f : 0f;
+            var a = Mathf.MoveTowards(c.a, tgt, speed * Time.deltaTime);
 
             rgb.a = a;
             rend.material.color = rgb;
             rend.forceRenderingOff = a <= 0.01f;
         }
 
-        Color ColourHandling()
+        private Color ColourHandling()
         {
-            int idx = rig.setMatIndex;
-            if (idx == 1)
-                return Color.red;
-            else if (idx == 2 || idx == 11)
-                return Orange;
-            else if (idx == 3 || idx == 7)
-                return Color.blue;
-            else if (idx == 12)
+            if (rig.bodyRenderer.cosmeticBodyType == GorillaBodyType.Skeleton)
+            {
                 return Color.green;
-            else
-                return baseCol;
+            }
+            switch (rig.setMatIndex)
+            {
+                case 1:
+                    return Color.red;
+                case 2:
+                case 11:
+                    return Orange;
+                case 3:
+                case 7:
+                    return Color.blue;
+                case 12:
+                    return Color.green;
+                default:
+                    return baseCol;
+            }
         }
 
-        void OnDisable()
+        private bool CheckGhost()
         {
-            if (speakerSrc != null)
-                speakerSrc.volume = baseVolume;   // leave source untouched for other mods
+            if (rig.IsInvisibleToLocalPlayer || rig.bodyRenderer.cosmeticBodyType == GorillaBodyType.Invisible)
+                return true;
+
+            return false;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using BepInEx;
 using BepInEx.Configuration;
-using UnityEngine;
 using WhoIsTalking.Patches;
 
 namespace WhoIsTalking

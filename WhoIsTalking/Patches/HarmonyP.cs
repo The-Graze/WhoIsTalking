@@ -1,24 +1,20 @@
-﻿using HarmonyLib;
-using System;
-using System.Reflection;
+﻿using System.Reflection;
+using HarmonyLib;
 
 namespace WhoIsTalking.Patches
 {
     public class HarmonyP
     {
-        private static Harmony instance;    
+        public const string InstanceId = PluginInfo.GUID;
+        private static Harmony instance;
 
         public static bool IsPatched { get; private set; }
-        public const string InstanceId = PluginInfo.GUID;
 
         internal static void ApplyPatches()
         {
             if (!IsPatched)
             {
-                if (instance == null)
-                {
-                    instance = new Harmony(InstanceId);
-                }
+                if (instance == null) instance = new Harmony(InstanceId);
 
                 instance.PatchAll(Assembly.GetExecutingAssembly());
                 IsPatched = true;
