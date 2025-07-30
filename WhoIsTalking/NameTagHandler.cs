@@ -1,5 +1,6 @@
 ﻿using System;                               // for Math
 using UnityEngine;
+using UnityEngine.SceneManagement;          // ① NEW – scene check
 using Photon.Realtime;
 using Photon.Pun;
 using Photon.Voice.PUN;
@@ -11,7 +12,7 @@ namespace WhoIsTalking
 {
     public class NameTagHandler : MonoBehaviour
     {
-        /* -------- prefab parts -------- */
+        /* ───────── prefab parts ───────── */
         GameObject NameFP, NameTP;
         Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
         TextMesh FPText, TPText;
@@ -21,21 +22,32 @@ namespace WhoIsTalking
         Vector3 speakerBaseScale;               // original prefab scale
         Color currentColour;
 
-        /* -------- Photon refs -------- */
+        /* ───────── Photon refs ───────── */
         public VRRig rig;
         NetPlayer player;
         PhotonVoiceView voice;
 
-        /* -------- helpers -------- */
+        /* ───────── helpers ───────── */
         readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
         private Color baseCol = Color.black;
         static readonly float[] audioSamples = new float[256];    // reused buffer
 
-        /* -------- proximity-voice -------- */
+        /* ───────── proximity‑voice ───────── */
         AudioSource speakerSrc;
         float baseVolume = 1f;
         int lastViewID = -1;
 
+        /* ───────── existing skin reference ───────── */
+        Transform gorillaNew;
+
+        /* ───────── ② NEW – quick Bayou helper ───────── */
+        static bool BayouActive()
+        {
+            Scene s = SceneManager.GetSceneByName("Bayou");
+            return s.IsValid() && s.isLoaded;
+        }
+
+        /*──────────────────────────────────────────────────────────*/
         void Start()
         {
             if (NameFP == null && NameTP == null)
@@ -43,13 +55,17 @@ namespace WhoIsTalking
 
             RefreshInfo(baseCol);                               // cache refs on first spawn
 
+            /* existing ► cache reference to the player’s skin object */
+            gorillaNew = transform.root.Find("gorilla_new");
+
             currentColour = ColourHandling();
             RefreshInfo(baseCol);                               // cache refs on first spawn
         }
 
+        /*──────────────────────────────────────────────────────────*/
         void SetUpNameTag()
         {
-            /* first-person tag */
+            /* first‑person tag */
             SetUpNameTagInstance(ref NameFP, "First Person NameTag", "FirstPersonOnly");
             FPSpeakerRend = NameFP.transform.GetChild(0).GetComponent<Renderer>();
             FPSpeakerRend.material.shader = AssetRef.shader;
@@ -60,7 +76,7 @@ namespace WhoIsTalking
             FPSpeakerSpin = FPSpeakerRend.gameObject.AddComponent<Spinner>();
             FPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
-            /* third-person / mirror tag */
+            /* third‑person / mirror tag */
             SetUpNameTagInstance(ref NameTP, "Third Person NameTag", "MirrorOnly");
             TPSpeakerRend = NameTP.transform.GetChild(0).GetComponent<Renderer>();
             TPSpeakerRend.material.shader = AssetRef.shader;
@@ -101,7 +117,7 @@ namespace WhoIsTalking
         /*──────────────────────────────────────────────────────────*/
         void RefreshSpeakerRef()
         {
-            /*───────────────────────── primary (Photon Voice) ─────────────────────────*/
+            /*──────── primary (Photon Voice) ────────*/
             if (voice?.SpeakerInUse != null)
             {
                 PhotonView pv = voice.SpeakerInUse.GetComponent<PhotonView>();
@@ -122,17 +138,13 @@ namespace WhoIsTalking
                 }
             }
 
-            /*───────────────────────── fallback (manual hierarchy) ────────────────────*/
-            // rig → body/head/SpeakerHeadCollider/HeadSpeaker
-            Transform t = transform.Find(
-                "body/head/SpeakerHeadCollider/HeadSpeaker");
-
+            /*──────── fallback (manual hierarchy) ────────*/
+            Transform t = transform.Find("body/head/SpeakerHeadCollider/HeadSpeaker");
             if (t == null) return;
 
             AudioSource manualSrc = t.GetComponent<AudioSource>();
             if (manualSrc == null) return;
 
-            // only update if we *changed* speaker
             if (speakerSrc != manualSrc)
             {
                 speakerSrc = manualSrc;
@@ -141,38 +153,52 @@ namespace WhoIsTalking
             }
         }
 
+        /*──────── keep gorilla_new ref healthy ────────*/
+        void RefreshGorillaNewRef()
+        {
+            if (gorillaNew == null)
+                gorillaNew = transform.root.Find("gorilla_new");
+        }
 
+        /*──────────────────────────────────────────────────────────*/
         void FixedUpdate()
         {
-            RefreshSpeakerRef();                       // keep refs valid
+            RefreshGorillaNewRef();
+            RefreshSpeakerRef();
 
             try
             {
                 FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
-
                 Color targetCol = ColourHandling();
-                float colourSpeed = (Mod.ColourChangeTime.Value > 0f) ?
-                                      Time.deltaTime / Mod.ColourChangeTime.Value : 1f;
+                float colourSpeed = (Mod.ColourChangeTime.Value > 0f)
+                                    ? Time.deltaTime / Mod.ColourChangeTime.Value
+                                    : 1f;
                 currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
 
+                /*──── ③ NEW: fade tags while Bayou scene is loaded ────*/
+                bool bayou = BayouActive();
+
+                bool skinVisible = gorillaNew == null || gorillaNew.gameObject.activeInHierarchy;
 
                 float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
                 bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
-                bool showFPTag = Mod.ShowFirstPersonTag.Value && withinRange;
-                bool showTPTag = Mod.ShowThirdPersonTag.Value && withinRange;
-                bool speaking = Mod.Speaker.Value && voice.IsSpeaking;
+
+                bool showFPTag = !bayou && Mod.ShowFirstPersonTag.Value && withinRange && skinVisible;
+                bool showTPTag = !bayou && Mod.ShowThirdPersonTag.Value && withinRange && skinVisible;
+                bool speaking = !bayou && Mod.Speaker.Value && voice.IsSpeaking;
 
                 bool showFPIcon = showFPTag && speaking;
                 bool showTPIcon = showTPTag && speaking;
 
                 float fadeSpeed = (Mod.FadeTime.Value > 0f) ? 1f / Mod.FadeTime.Value : 1000f;
+
                 FadeRenderer(FPRend, showFPTag, currentColour, fadeSpeed);
                 FadeRenderer(FPSpeakerRend, showFPIcon, currentColour, fadeSpeed);
                 FadeRenderer(TPRend, showTPTag, currentColour, fadeSpeed);
                 FadeRenderer(TPSpeakerRend, showTPIcon, currentColour, fadeSpeed);
 
-                /*──── mic-pulse ────*/
+                /*──── mic‑pulse ────*/
                 if (Mod.MicPulse.Value)
                     ApplyMicPulse();
                 else
@@ -186,7 +212,7 @@ namespace WhoIsTalking
                 {
                     float targetVol;
                     if (Mod.ProximityVoiceChat.Value && !player.IsLocal)
-                        targetVol = (dist <= Mod.ViewDistance.Value.ClampSafe(0,10)) ? baseVolume : 0f;
+                        targetVol = (dist <= Mod.ViewDistance.Value.ClampSafe(0, 10)) ? baseVolume : 0f;
                     else
                         targetVol = baseVolume;
 
@@ -210,6 +236,7 @@ namespace WhoIsTalking
             }
         }
 
+        /*──────────────────────────────────────────────────────────*/
         void ApplyMicPulse()
         {
             float amp = 0f;
@@ -223,8 +250,7 @@ namespace WhoIsTalking
                 {
                     src.GetOutputData(audioSamples, 0);
                     double sum = 0;
-                    foreach (float s in audioSamples)
-                        sum += s * s;
+                    foreach (float s in audioSamples) sum += s * s;
                     amp = (float)Math.Sqrt(sum / audioSamples.Length);
                 }
             }
@@ -240,6 +266,7 @@ namespace WhoIsTalking
             TPSpeakerRend.transform.localScale = scl;
         }
 
+        /*──────────────────────────────────────────────────────────*/
         void FadeRenderer(Renderer rend, bool visible, Color rgb, float speed)
         {
             Color c = rend.material.color;
@@ -251,6 +278,7 @@ namespace WhoIsTalking
             rend.forceRenderingOff = a <= 0.01f;
         }
 
+        /*──────────────────────────────────────────────────────────*/
         Color ColourHandling()
         {
             int idx = rig.setMatIndex;
@@ -266,6 +294,7 @@ namespace WhoIsTalking
                 return baseCol;
         }
 
+        /*──────────────────────────────────────────────────────────*/
         void OnDisable()
         {
             if (speakerSrc != null)
