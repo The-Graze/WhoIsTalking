@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using UnityEngine;
 
 namespace WhoIsTalking
@@ -7,12 +9,11 @@ namespace WhoIsTalking
     {
         public static readonly GameObject Tag;
         public static Shader shader = Shader.Find("UI/Default");
-
         static AssetRef()
         {
-            using (var str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker"))
+            using (Stream str = Assembly.GetExecutingAssembly().GetManifestResourceStream("WhoIsTalking.Assets.speaker"))
             {
-                var bundle = AssetBundle.LoadFromStream(str);
+                AssetBundle bundle = AssetBundle.LoadFromStream(str);
                 if (bundle != null)
                 {
                     Tag = bundle.LoadAsset<GameObject>("speaker");
