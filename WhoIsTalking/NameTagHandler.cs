@@ -1,9 +1,10 @@
 ﻿using System;
-using Cinemachine;
 using GorillaExtensions;
 using JetBrains.Annotations;
 using Photon.Voice.PUN;
+using Unity.Cinemachine;
 using UnityEngine;
+
 namespace WhoIsTalking
 {
     public class NameTagHandler : MonoBehaviour
@@ -22,7 +23,7 @@ namespace WhoIsTalking
 
         private Spinner FPSpeakerSpin, TPSpeakerSpin;
         private TextMesh FPText, TPText;
-        
+
 
         /* -------- prefab parts -------- */
         private GameObject NameFP, NameTP;
@@ -125,9 +126,9 @@ namespace WhoIsTalking
             /* first-person tag */
             SetUpNameTagInstance(ref NameFP, "First Person NameTag", "FirstPersonOnly");
             FPSpeakerRend = NameFP.transform.GetChild(0).GetComponent<Renderer>();
-            FPSpeakerRend.material.shader = AssetRef.shader;
+            FPSpeakerRend.material.shader = AssetRef.Shader;
             FPRend = NameFP.transform.GetChild(1).GetComponent<Renderer>();
-            FPRend.material.shader = AssetRef.shader;
+            FPRend.material.shader = AssetRef.Shader;
             FPText = FPRend.GetComponent<TextMesh>();
 
             FPSpeakerSpin = FPSpeakerRend.gameObject.AddComponent<Spinner>();
@@ -136,9 +137,9 @@ namespace WhoIsTalking
             /* third-person / mirror tag */
             SetUpNameTagInstance(ref NameTP, "Third Person NameTag", "MirrorOnly");
             TPSpeakerRend = NameTP.transform.GetChild(0).GetComponent<Renderer>();
-            TPSpeakerRend.material.shader = AssetRef.shader;
+            TPSpeakerRend.material.shader = AssetRef.Shader;
             TPRend = NameTP.transform.GetChild(1).GetComponent<Renderer>();
-            TPRend.material.shader = AssetRef.shader;
+            TPRend.material.shader = AssetRef.Shader;
             TPText = TPRend.GetComponent<TextMesh>();
 
             TPSpeakerSpin = TPSpeakerRend.gameObject.AddComponent<Spinner>();
@@ -156,19 +157,16 @@ namespace WhoIsTalking
             }
         }
 
-        private void SetUpNameTagInstance([NotNull] ref GameObject nameTag, string goName, string layerName)
+        private void SetUpNameTagInstance(ref GameObject nameTag, string goName, string layerName)
         {
-            if (nameTag != null)
-            {
-                nameTag = Instantiate(AssetRef.Tag, transform);
-                nameTag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
+            nameTag = Instantiate(AssetRef.Tag, transform);
+            nameTag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
 
-                var layer = LayerMask.NameToLayer(layerName);
-                nameTag.layer = layer;
-                foreach (Transform t in nameTag.transform) t.gameObject.layer = layer;
+            var layer = LayerMask.NameToLayer(layerName);
+            nameTag.layer = layer;
+            foreach (Transform t in nameTag.transform) t.gameObject.layer = layer;
 
-                nameTag.name = goName;
-            }
+            nameTag.name = goName;
         }
 
         public void RefreshInfo(Color c)
@@ -262,10 +260,7 @@ namespace WhoIsTalking
 
         private Color ColourHandling()
         {
-            if (rig.bodyRenderer.cosmeticBodyType == GorillaBodyType.Skeleton)
-            {
-                return Color.green;
-            }
+            if (rig.bodyRenderer.cosmeticBodyType == GorillaBodyType.Skeleton) return Color.green;
             switch (rig.setMatIndex)
             {
                 case 1:
