@@ -1,109 +1,103 @@
-
 using System;                               // for Math
 using UnityEngine;
 using UnityEngine.SceneManagement;          // ① NEW – scene check
-using Photon.Realtime;
 using Photon.Pun;
-using Photon.Voice.PUN;
-using Photon.Voice.Unity;                   // Recorder.LevelMeter
+using Photon.Voice.PUN;                 // Recorder.LevelMeter
 using GorillaExtensions;
 using JetBrains.Annotations;
-using Photon.Voice.PUN;
 using Unity.Cinemachine;
-using UnityEngine;
 
 namespace WhoIsTalking
 {
     public class NameTagHandler : MonoBehaviour
     {
         /* ───────── prefab parts ───────── */
-        GameObject NameFP, NameTP;
-        Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
-        TextMesh FPText, TPText;
-        Camera ThirdPCam;
+        private GameObject _nameFp, _nameTp;
+        private Camera _thirdPCam;
 
-        Spinner FPSpeakerSpin, TPSpeakerSpin;
-        Vector3 speakerBaseScale;               // original prefab scale
-        Color currentColour;
+        private Vector3 _speakerBaseScale;               // original prefab scale
 
         /* ───────── Photon refs ───────── */
         public VRRig rig;
-        NetPlayer player;
-        PhotonVoiceView voice;
+        private NetPlayer _player;
+        private PhotonVoiceView _voice;
 
         /* ───────── helpers ───────── */
-        readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
-        private Color baseCol = Color.black;
-        static readonly float[] audioSamples = new float[256];    // reused buffer
-        private float baseVolume = 1f;
-        private Color currentColour;
-        private Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
+        private readonly Color _orange = new Color(1f, 0.3288f, 0f, 1f);
+        private Color _baseCol = Color.black;
+        private static readonly float[] AudioSamples = new float[256];    // reused buffer
+        private Color _currentColour;
+        private Renderer _fpRend, _tpRend, _fpSpeakerRend, _tpSpeakerRend;
 
-        private Spinner FPSpeakerSpin, TPSpeakerSpin;
-        private TextMesh FPText, TPText;
+        private Spinner _fpSpeakerSpin, _tpSpeakerSpin;
+        private TextMesh _fpText, _tpText;
 
         /* ───────── proximity‑voice ───────── */
-        AudioSource speakerSrc;
-        float baseVolume = 1f;
-        int lastViewID = -1;
+        private AudioSource _speakerSrc;
+        private float _baseVolume = 1f;
+        private int _lastViewID = -1;
 
         /* ───────── existing skin reference ───────── */
-        Transform gorillaNew;
+        private Transform _gorillaNew;
 
         /* ───────── ② NEW – quick Bayou helper ───────── */
-        static bool BayouActive()
+        private static bool BayouActive()
         {
-            Scene s = SceneManager.GetSceneByName("Bayou");
+            var s = SceneManager.GetSceneByName("Bayou");
             return s.IsValid() && s.isLoaded;
         }
 
         /*──────────────────────────────────────────────────────────*/
-        void Start()
+        public void Start()
         {
-            if (NameFP == null && NameTP == null)
+            if (_nameFp == null && _nameTp == null)
                 SetUpNameTag();
 
-            RefreshInfo(baseCol);                               // cache refs on first spawn
+            RefreshInfo(_baseCol);                               // cache refs on first spawn
 
             /* existing ► cache reference to the player’s skin object */
-            gorillaNew = transform.root.Find("gorilla_new");
+            _gorillaNew = transform.root.Find("gorilla_new");
 
-            currentColour = ColourHandling();
-            RefreshInfo(baseCol);                               // cache refs on first spawn
+            _currentColour = ColourHandling();
+            RefreshInfo(_baseCol);                               // cache refs on first spawn
         }
 
         /*──────────────────────────────────────────────────────────*/
-        void SetUpNameTag()
+        private void SetUpNameTag()
         {
             /* first‑person tag */
-            SetUpNameTagInstance(ref NameFP, "First Person NameTag", "FirstPersonOnly");
-            FPSpeakerRend = NameFP.transform.GetChild(0).GetComponent<Renderer>();
-            FPSpeakerRend.material.shader = AssetRef.Shader;
-            FPRend = NameFP.transform.GetChild(1).GetComponent<Renderer>();
-            FPRend.material.shader = AssetRef.Shader;
-            FPText = FPRend.GetComponent<TextMesh>();
+            SetUpNameTagInstance(ref _nameFp, "First Person NameTag", "FirstPersonOnly");
+            _fpSpeakerRend = _nameFp.transform.GetChild(0).GetComponent<Renderer>();
+            _fpSpeakerRend.material.shader = AssetRef.Shader;
+            _fpRend = _nameFp.transform.GetChild(1).GetComponent<Renderer>();
+            _fpRend.material.shader = AssetRef.Shader;
+            _fpText = _fpRend.GetComponent<TextMesh>();
 
-            FPSpeakerSpin = FPSpeakerRend.gameObject.AddComponent<Spinner>();
-            FPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
+            _fpSpeakerSpin = _fpSpeakerRend.gameObject.AddComponent<Spinner>();
+            _fpSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
             /* third‑person / mirror tag */
-            SetUpNameTagInstance(ref NameTP, "Third Person NameTag", "MirrorOnly");
-            TPSpeakerRend = NameTP.transform.GetChild(0).GetComponent<Renderer>();
-            TPSpeakerRend.material.shader = AssetRef.Shader;
-            TPRend = NameTP.transform.GetChild(1).GetComponent<Renderer>();
-            TPRend.material.shader = AssetRef.Shader;
-            TPText = TPRend.GetComponent<TextMesh>();
+            SetUpNameTagInstance(ref _nameTp, "Third Person NameTag", "MirrorOnly");
+            _tpSpeakerRend = _nameTp.transform.GetChild(0).GetComponent<Renderer>();
+            _tpSpeakerRend.material.shader = AssetRef.Shader;
+            _tpRend = _nameTp.transform.GetChild(1).GetComponent<Renderer>();
+            _tpRend.material.shader = AssetRef.Shader;
+            _tpText = _tpRend.GetComponent<TextMesh>();
 
-            TPSpeakerSpin = TPSpeakerRend.gameObject.AddComponent<Spinner>();
-            TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
+            _tpSpeakerSpin = _tpSpeakerRend.gameObject.AddComponent<Spinner>();
+            _tpSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
-            speakerBaseScale = FPSpeakerRend.transform.localScale;
+            _speakerBaseScale = _fpSpeakerRend.transform.localScale;
 
-            try { ThirdPCam = FindObjectOfType<CinemachineBrain>()?.GetComponent<Camera>(); }
-            catch { }
+            try { _thirdPCam = FindFirstObjectByType<CinemachineBrain>()?.GetComponent<Camera>(); }
+            catch
+            {
+                // ignored
+            }
         }
         private void SetUpNameTagInstance(ref GameObject nameTag, string goName, string layerName)
         {
+            if (nameTag != null) return;
             nameTag = Instantiate(AssetRef.Tag, transform);
             nameTag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
 
@@ -117,9 +111,9 @@ namespace WhoIsTalking
         public void RefreshInfo(Color c)
         {
             rig = GetComponent<VRRig>();
-            player = rig?.OwningNetPlayer;
-            voice = VRRigCache.rigsInUse[rig.OwningNetPlayer].voiceView;
-            baseCol = c;
+            _player = rig?.OwningNetPlayer;
+            _voice = VRRigCache.rigsInUse[rig?.OwningNetPlayer!].voiceView;
+            _baseCol = c;
             RefreshSpeakerRef();
         }
 
@@ -127,20 +121,20 @@ namespace WhoIsTalking
         void RefreshSpeakerRef()
         {
             /*──────── primary (Photon Voice) ────────*/
-            if (voice?.SpeakerInUse != null)
+            if (_voice?.SpeakerInUse != null)
             {
-                PhotonView pv = voice.SpeakerInUse.GetComponent<PhotonView>();
-                AudioSource src = voice.SpeakerInUse.GetComponent<AudioSource>();
+                PhotonView pv = _voice.SpeakerInUse.GetComponent<PhotonView>();
+                AudioSource src = _voice.SpeakerInUse.GetComponent<AudioSource>();
 
                 if (src != null)
                 {
                     int id = (pv != null) ? pv.ViewID : -1;   // –1 when no PhotonView
 
-                    if (speakerSrc != src)        // swapped lobby or first run
+                    if (_speakerSrc != src)        // swapped lobby or first run
                     {
-                        speakerSrc = src;
-                        baseVolume = speakerSrc.volume;
-                        lastViewID = id;
+                        _speakerSrc = src;
+                        _baseVolume = _speakerSrc.volume;
+                        _lastViewID = id;
                     }
 
                     return;   // all good – nothing else to do
@@ -154,94 +148,94 @@ namespace WhoIsTalking
             AudioSource manualSrc = t.GetComponent<AudioSource>();
             if (manualSrc == null) return;
 
-            if (speakerSrc != manualSrc)
+            if (_speakerSrc != manualSrc)
             {
-                speakerSrc = manualSrc;
-                baseVolume = speakerSrc.volume;
-                lastViewID = -1;
+                _speakerSrc = manualSrc;
+                _baseVolume = _speakerSrc.volume;
+                _lastViewID = -1;
             }
         }
 
         /*──────── keep gorilla_new ref healthy ────────*/
         void RefreshGorillaNewRef()
         {
-            if (gorillaNew == null)
-                gorillaNew = transform.root.Find("gorilla_new");
+            if (_gorillaNew == null)
+                _gorillaNew = transform.root.Find("gorilla_new");
         }
 
         /*──────────────────────────────────────────────────────────*/
-        void FixedUpdate()
+        private void FixedUpdate()
         {
             RefreshGorillaNewRef();
             RefreshSpeakerRef();
 
             try
             {
-                FPSpeakerSpin.Speed = TPSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
+                _fpSpeakerSpin.Speed = _tpSpeakerSpin.Speed = Mod.SpinnerSpeed.Value;
 
-                Color targetCol = ColourHandling();
-                float colourSpeed = (Mod.ColourChangeTime.Value > 0f)
+                var targetCol = ColourHandling();
+                var colourSpeed = (Mod.ColourChangeTime.Value > 0f)
                                     ? Time.deltaTime / Mod.ColourChangeTime.Value
                                     : 1f;
-                currentColour = Color.Lerp(currentColour, targetCol, colourSpeed);
+                _currentColour = Color.Lerp(_currentColour, targetCol, colourSpeed);
 
                 /*──── ③ NEW: fade tags while Bayou scene is loaded ────*/
-                bool bayou = BayouActive();
+                var bayou = BayouActive();
 
-                bool skinVisible = gorillaNew == null || gorillaNew.gameObject.activeInHierarchy;
+                var skinVisible = _gorillaNew == null || _gorillaNew.gameObject.activeInHierarchy;
 
-                float dist = Vector3.Distance(transform.position, Camera.main.transform.position);
-                bool withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
+                var dist = Vector3.Distance(transform.position, Camera.main!.transform.position);
+                var withinRange = dist <= Mod.ViewDistance.Value.ClampSafe(0, 10);
 
-                bool showFPTag = !bayou && Mod.ShowFirstPersonTag.Value && withinRange && skinVisible;
-                bool showTPTag = !bayou && Mod.ShowThirdPersonTag.Value && withinRange && skinVisible;
-                bool speaking = !bayou && Mod.Speaker.Value && voice.IsSpeaking;
+                var showFpTag = !bayou && Mod.ShowFirstPersonTag.Value && withinRange && skinVisible;
+                var showTpTag = !bayou && Mod.ShowThirdPersonTag.Value && withinRange && skinVisible;
+                var speaking = !bayou && Mod.Speaker.Value && _voice.IsSpeaking;
 
-                bool showFPIcon = showFPTag && speaking;
-                bool showTPIcon = showTPTag && speaking;
+                var showFpIcon = showFpTag && speaking;
+                var showTpIcon = showTpTag && speaking;
 
-                float fadeSpeed = (Mod.FadeTime.Value > 0f) ? 1f / Mod.FadeTime.Value : 1000f;
+                var fadeSpeed = (Mod.FadeTime.Value > 0f) ? 1f / Mod.FadeTime.Value : 1000f;
 
-                FadeRenderer(FPRend, showFPTag, currentColour, fadeSpeed);
-                FadeRenderer(FPSpeakerRend, showFPIcon, currentColour, fadeSpeed);
-                FadeRenderer(TPRend, showTPTag, currentColour, fadeSpeed);
-                FadeRenderer(TPSpeakerRend, showTPIcon, currentColour, fadeSpeed);
+                FadeRenderer(_fpRend, showFpTag, _currentColour, fadeSpeed);
+                FadeRenderer(_fpSpeakerRend, showFpIcon, _currentColour, fadeSpeed);
+                FadeRenderer(_tpRend, showTpTag, _currentColour, fadeSpeed);
+                FadeRenderer(_tpSpeakerRend, showTpIcon, _currentColour, fadeSpeed);
 
                 /*──── mic‑pulse ────*/
                 if (Mod.MicPulse.Value)
                     ApplyMicPulse();
                 else
                 {
-                    FPSpeakerRend.transform.localScale = speakerBaseScale;
-                    TPSpeakerRend.transform.localScale = speakerBaseScale;
+                    _fpSpeakerRend.transform.localScale = _speakerBaseScale;
+                    _tpSpeakerRend.transform.localScale = _speakerBaseScale;
                 }
 
                 /*──── proximity voice ────*/
-                if (speakerSrc != null)
+                if (_speakerSrc != null)
                 {
                     float targetVol;
-                    if (Mod.ProximityVoiceChat.Value && !player.IsLocal)
-                        targetVol = (dist <= Mod.ViewDistance.Value.ClampSafe(0, 10)) ? baseVolume : 0f;
+                    if (Mod.ProximityVoiceChat.Value && !_player.IsLocal)
+                        targetVol = (dist <= Mod.ViewDistance.Value.ClampSafe(0, 10)) ? _baseVolume : 0f;
                     else
-                        targetVol = baseVolume;
+                        targetVol = _baseVolume;
 
-                    speakerSrc.volume = Mathf.MoveTowards(
-                        speakerSrc.volume,
+                    _speakerSrc.volume = Mathf.MoveTowards(
+                        _speakerSrc.volume,
                         targetVol,
                         fadeSpeed * Time.deltaTime);
                 }
 
                 /*──── billboard & text ────*/
-                FPRend.transform.LookAt(Camera.main.transform.position);
-                TPRend.transform.LookAt((ThirdPCam != null)
-                                        ? ThirdPCam.transform.position
+                _fpRend.transform.LookAt(Camera.main.transform.position);
+                _tpRend.transform.LookAt((_thirdPCam != null)
+                                        ? _thirdPCam.transform.position
                                         : Camera.main.transform.position);
 
-                FPText.text = TPText.text = player.NickName;
+                _fpText.text = _tpText.text = _player.NickName;
             }
             catch
             {
-                RefreshInfo(baseCol);          // regain refs if something went null
+                RefreshInfo(_baseCol);          // regain refs if something went null
             }
         }
 
@@ -250,17 +244,17 @@ namespace WhoIsTalking
         {
             float amp = 0f;
 
-            if (voice?.RecorderInUse?.LevelMeter != null)
-                amp = voice.RecorderInUse.LevelMeter.CurrentPeakAmp;
-            else if (voice?.SpeakerInUse != null)
+            if (_voice?.RecorderInUse?.LevelMeter != null)
+                amp = _voice.RecorderInUse.LevelMeter.CurrentPeakAmp;
+            else if (_voice?.SpeakerInUse != null)
             {
-                AudioSource src = voice.SpeakerInUse.GetComponent<AudioSource>();
+                AudioSource src = _voice.SpeakerInUse.GetComponent<AudioSource>();
                 if (src != null && src.isPlaying)
                 {
-                    src.GetOutputData(audioSamples, 0);
+                    src.GetOutputData(AudioSamples, 0);
                     double sum = 0;
-                    foreach (float s in audioSamples) sum += s * s;
-                    amp = (float)Math.Sqrt(sum / audioSamples.Length);
+                    foreach (float s in AudioSamples) sum += s * s;
+                    amp = (float)Math.Sqrt(sum / AudioSamples.Length);
                 }
             }
 
@@ -270,9 +264,9 @@ namespace WhoIsTalking
                                      Mod.MicPulseMaxScale.Value,
                                      amp);
 
-            Vector3 scl = speakerBaseScale * scale;
-            FPSpeakerRend.transform.localScale = scl;
-            TPSpeakerRend.transform.localScale = scl;
+            Vector3 scl = _speakerBaseScale * scale;
+            _fpSpeakerRend.transform.localScale = scl;
+            _tpSpeakerRend.transform.localScale = scl;
         }
 
         /*──────────────────────────────────────────────────────────*/
@@ -297,22 +291,22 @@ namespace WhoIsTalking
                     return Color.red;
                 case 2:
                 case 11:
-                    return Orange;
+                    return _orange;
                 case 3:
                 case 7:
                     return Color.blue;
                 case 12:
                     return Color.green;
                 default:
-                    return baseCol;
+                    return _baseCol;
             }
         }
 
         /*──────────────────────────────────────────────────────────*/
         void OnDisable()
         {
-            if (speakerSrc != null)
-                speakerSrc.volume = baseVolume;   // leave source untouched for other mods
+            if (_speakerSrc != null)
+                _speakerSrc.volume = _baseVolume;   // leave source untouched for other mods
         }
     }
 }
