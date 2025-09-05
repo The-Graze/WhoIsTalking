@@ -28,7 +28,7 @@ The names smoothly changes color. No flicker!
 
 Applies to people that get infected as well.
 
-**Don't like it**? *Change it!* Everything was made customizable to your preferences.
+**Don't like it**? *Change it!* Everything was made customizable.
 ![Image](https://github.com/user-attachments/assets/0886bde2-93d0-4f58-b2fb-966d7e6b5ebe)
 
 **Scalable voice icon**

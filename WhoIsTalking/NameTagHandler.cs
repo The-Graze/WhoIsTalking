@@ -1,12 +1,16 @@
-﻿using System;                               // for Math
+
+using System;                               // for Math
 using UnityEngine;
 using UnityEngine.SceneManagement;          // ① NEW – scene check
 using Photon.Realtime;
 using Photon.Pun;
 using Photon.Voice.PUN;
 using Photon.Voice.Unity;                   // Recorder.LevelMeter
-using Cinemachine;
 using GorillaExtensions;
+using JetBrains.Annotations;
+using Photon.Voice.PUN;
+using Unity.Cinemachine;
+using UnityEngine;
 
 namespace WhoIsTalking
 {
@@ -31,6 +35,12 @@ namespace WhoIsTalking
         readonly Color Orange = new Color(1f, 0.3288f, 0f, 1f);
         private Color baseCol = Color.black;
         static readonly float[] audioSamples = new float[256];    // reused buffer
+        private float baseVolume = 1f;
+        private Color currentColour;
+        private Renderer FPRend, TPRend, FPSpeakerRend, TPSpeakerRend;
+
+        private Spinner FPSpeakerSpin, TPSpeakerSpin;
+        private TextMesh FPText, TPText;
 
         /* ───────── proximity‑voice ───────── */
         AudioSource speakerSrc;
@@ -68,9 +78,9 @@ namespace WhoIsTalking
             /* first‑person tag */
             SetUpNameTagInstance(ref NameFP, "First Person NameTag", "FirstPersonOnly");
             FPSpeakerRend = NameFP.transform.GetChild(0).GetComponent<Renderer>();
-            FPSpeakerRend.material.shader = AssetRef.shader;
+            FPSpeakerRend.material.shader = AssetRef.Shader;
             FPRend = NameFP.transform.GetChild(1).GetComponent<Renderer>();
-            FPRend.material.shader = AssetRef.shader;
+            FPRend.material.shader = AssetRef.Shader;
             FPText = FPRend.GetComponent<TextMesh>();
 
             FPSpeakerSpin = FPSpeakerRend.gameObject.AddComponent<Spinner>();
@@ -79,9 +89,9 @@ namespace WhoIsTalking
             /* third‑person / mirror tag */
             SetUpNameTagInstance(ref NameTP, "Third Person NameTag", "MirrorOnly");
             TPSpeakerRend = NameTP.transform.GetChild(0).GetComponent<Renderer>();
-            TPSpeakerRend.material.shader = AssetRef.shader;
+            TPSpeakerRend.material.shader = AssetRef.Shader;
             TPRend = NameTP.transform.GetChild(1).GetComponent<Renderer>();
-            TPRend.material.shader = AssetRef.shader;
+            TPRend.material.shader = AssetRef.Shader;
             TPText = TPRend.GetComponent<TextMesh>();
 
             TPSpeakerSpin = TPSpeakerRend.gameObject.AddComponent<Spinner>();
@@ -92,17 +102,16 @@ namespace WhoIsTalking
             try { ThirdPCam = FindObjectOfType<CinemachineBrain>()?.GetComponent<Camera>(); }
             catch { }
         }
-
-        void SetUpNameTagInstance(ref GameObject tag, string name, string layerName)
+        private void SetUpNameTagInstance(ref GameObject nameTag, string goName, string layerName)
         {
-            tag = Instantiate(AssetRef.Tag, transform);
-            tag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
+            nameTag = Instantiate(AssetRef.Tag, transform);
+            nameTag.transform.localPosition = new Vector3(0f, -1.727f, 0f);
 
-            int layer = LayerMask.NameToLayer(layerName);
-            tag.layer = layer;
-            foreach (Transform t in tag.transform) t.gameObject.layer = layer;
+            var layer = LayerMask.NameToLayer(layerName);
+            nameTag.layer = layer;
+            foreach (Transform t in nameTag.transform) t.gameObject.layer = layer;
 
-            tag.name = name;
+            nameTag.name = goName;
         }
 
         public void RefreshInfo(Color c)
@@ -281,17 +290,22 @@ namespace WhoIsTalking
         /*──────────────────────────────────────────────────────────*/
         Color ColourHandling()
         {
-            int idx = rig.setMatIndex;
-            if (idx == 1)
-                return Color.red;
-            else if (idx == 2 || idx == 11)
-                return Orange;
-            else if (idx == 3 || idx == 7)
-                return Color.blue;
-            else if (idx == 12)
-                return Color.green;
-            else
-                return baseCol;
+            if (rig.bodyRenderer.cosmeticBodyType == GorillaBodyType.Skeleton) return Color.green;
+            switch (rig.setMatIndex)
+            {
+                case 1:
+                    return Color.red;
+                case 2:
+                case 11:
+                    return Orange;
+                case 3:
+                case 7:
+                    return Color.blue;
+                case 12:
+                    return Color.green;
+                default:
+                    return baseCol;
+            }
         }
 
         /*──────────────────────────────────────────────────────────*/
